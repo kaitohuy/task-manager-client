@@ -1,0 +1,58 @@
+<div class="h-full flex flex-col gap-6 animate-fade-in" *ngIf="!isLoading">
+  
+  <!-- Search and Filters -->
+  <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between w-full bg-white p-4 rounded-xl border border-slate-200 shadow-sm shrink-0">
+    <div class="relative flex-1 md:max-w-xs">
+      <svg class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+      <input type="text" 
+             [ngModel]="searchQuery"
+             (ngModelChange)="setSearchQuery($event)"
+             placeholder="Search in project..." 
+             class="w-full bg-slate-50 border border-slate-200 rounded-md py-1.5 pl-10 pr-4 text-sm focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600/20 transition-all font-medium" />
+    </div>
+
+    <div class="flex flex-wrap items-center gap-3">
+      <select [ngModel]="statusFilter" 
+              (ngModelChange)="setStatusFilter($event)"
+              class="bg-white border border-slate-200 text-slate-600 text-xs font-bold rounded-md px-3 py-1.5 focus:outline-none focus:border-blue-600 transition-colors uppercase tracking-tight">
+        <option value="all">All Statuses</option>
+        <option value="TODO">To Do</option>
+        <option value="IN_PROGRESS">In Progress</option>
+        <option value="DONE">Done</option>
+        <option value="PAUSED">Paused</option>
+        <option value="CANCELLED">Cancelled</option>
+      </select>
+
+      <select [ngModel]="sortBy" 
+              (ngModelChange)="setSortBy($event)"
+              class="bg-white border border-slate-200 text-slate-600 text-xs font-bold rounded-md px-3 py-1.5 focus:outline-none focus:border-blue-600 transition-colors uppercase tracking-tight">
+        <option value="deadline-asc">Deadline: Soon</option>
+        <option value="deadline-desc">Deadline: Later</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="flex-1 min-h-0">
+    <app-kanban-board 
+      [tasks]="filteredAndSortedTasks" 
+      (onTaskClick)="onTaskClick($event)">
+    </app-kanban-board>
+  </div>
+</div>
+
+<!-- Loading State -->
+<div *ngIf="isLoading" class="h-full flex items-center justify-center text-slate-400">
+  <div class="flex flex-col items-center gap-4">
+    <svg class="animate-spin h-8 w-8 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+    </svg>
+    <p class="text-sm font-bold uppercase tracking-widest text-slate-500">Loading Board...</p>
+  </div>
+</div>
+
+<!-- Task Detail Right Panel -->
+<app-task-detail-panel
+  [task]="selectedTask"
+  (closePanel)="closeTaskDetail()">
+</app-task-detail-panel>

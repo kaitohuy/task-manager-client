@@ -1,0 +1,197 @@
+<div class="h-full animate-fade-in flex flex-col">
+  
+  <!-- Header -->
+  <div class="flex flex-col md:flex-row md:items-center justify-between mb-10 gap-6 shrink-0">
+    <div>
+      <h2 class="text-3xl font-black text-slate-900 tracking-tight">Team Members</h2>
+      <p class="text-xs font-black text-slate-500 mt-1.5 uppercase tracking-widest flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+        {{ members.length }} Total members in project
+      </p>
+    </div>
+    
+    <div class="flex items-center gap-4">
+      <!-- Search Input -->
+      <div class="relative group">
+        <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-blue-600 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+        <input type="text" [(ngModel)]="searchQuery" (ngModelChange)="filterMembers()"
+               placeholder="Search by name, username..." 
+               class="bg-white border border-slate-200 rounded-2xl h-11 pl-10 pr-4 text-sm font-bold text-slate-800 w-64 focus:outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-100 transition-all shadow-sm" />
+      </div>
+      
+      <button *ngIf="isAdminOrManager" (click)="openAddModal()" 
+              class="bg-blue-600 text-white px-6 h-11 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-blue-700 transition-all shadow-lg shadow-blue-600/20 active:scale-95 flex items-center gap-2">
+        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+        </svg>
+        Add Member
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="flex-1 overflow-auto custom-scrollbar relative">
+    
+    <!-- Loading Overlay -->
+    <div *ngIf="isLoading" class="absolute inset-0 bg-slate-50/50 backdrop-blur-sm z-10 flex items-center justify-center">
+      <div class="animate-spin h-10 w-10 border-4 border-slate-200 border-t-blue-600 rounded-full"></div>
+    </div>
+    
+    <!-- Empty State (No search results) -->
+    <div *ngIf="!isLoading && filteredMembers.length === 0 && searchQuery" class="flex flex-col items-center justify-center py-20 bg-white rounded-[2.5rem] border border-slate-200 shadow-sm">
+      <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center text-slate-300 mb-4">
+        <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+      </div>
+      <p class="text-sm font-bold text-slate-500">No members found matching "{{ searchQuery }}"</p>
+    </div>
+
+    <!-- Empty State (No project members yet) -->
+    <div *ngIf="!isLoading && members.length === 0 && !searchQuery" class="flex flex-col items-center justify-center py-32 bg-white rounded-[2.5rem] border border-slate-200 border-dashed">
+      <div class="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center text-slate-300 mb-6">
+        <svg class="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+        </svg>
+      </div>
+      <h3 class="text-lg font-black text-slate-800 tracking-tight">No Members Yet</h3>
+      <p class="text-sm font-bold text-slate-400 mt-2">Get started by inviting your team.</p>
+      <button *ngIf="isAdminOrManager" (click)="openAddModal()" class="mt-6 text-blue-600 font-bold text-sm bg-blue-50 px-6 py-2.5 rounded-xl hover:bg-blue-100 transition-colors">
+        Add First Member
+      </button>
+    </div>
+
+    <!-- Members Grid -->
+    <div *ngIf="!isLoading && filteredMembers.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pb-20">
+      
+      <!-- Card -->
+      <div *ngFor="let m of filteredMembers" class="bg-white rounded-[2.5rem] p-6 border border-slate-200 flex flex-col hover:shadow-2xl hover:shadow-slate-200/60 hover:border-blue-200 transition-all duration-500 group relative overflow-hidden">
+        
+        <!-- Decoration Background -->
+        <div class="absolute -top-12 -right-12 w-32 h-32 bg-slate-50 rounded-full opacity-50 group-hover:scale-150 transition-transform duration-700"></div>
+
+        <div class="flex items-start justify-between mb-6 relative">
+          <div class="h-16 w-16 rounded-2xl border-4 border-white bg-slate-50 flex items-center justify-center overflow-hidden shadow-lg shrink-0 group-hover:scale-105 transition-transform duration-500">
+            <img *ngIf="m.user.imageUrl" [src]="m.user.imageUrl" class="w-full h-full object-cover">
+            <ng-container *ngIf="!m.user.imageUrl">
+              <img *ngIf="m.user.gender === 'FEMALE'" src="/images/female_avatar.png" class="w-full h-full object-cover">
+              <img *ngIf="m.user.gender !== 'FEMALE'" src="/images/male_avatar.png" class="w-full h-full object-cover">
+            </ng-container>
+          </div>
+          
+          <div class="flex flex-col items-end gap-2">
+            <span class="px-2.5 py-1 rounded-lg text-[12px] font-black tracking-widest uppercase shadow-sm"
+                  [ngClass]="{
+                    'bg-amber-100 text-amber-700 border border-amber-200': m.role === 'LEADER',
+                    'bg-slate-100 text-slate-600 border border-slate-200': m.role === 'MEMBER'
+                  }">
+              {{ m.role }}
+            </span>
+            
+            <!-- Remove Action -->
+            <button *ngIf="isAdminOrManager" (click)="removeMember(m.user.id)" 
+                    class="h-8 w-8 rounded-xl flex items-center justify-center text-slate-500 hover:text-rose-600 hover:bg-rose-50 transition-all active:scale-90" title="Remove Member">
+              <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+            </button>
+          </div>
+        </div>
+        
+        <div class="mb-8 flex-1 relative">
+          <h3 class="text-lg font-black text-slate-800 tracking-tight leading-tight group-hover:text-blue-600 transition-colors">{{ m.user.fullName || m.user.username }}</h3>
+          <p class="text-xs font-bold text-slate-600 mt-1">@{{ m.user.username }}</p>
+          
+          <div class="flex items-center gap-2 mt-5 text-[12px] font-bold text-slate-600 bg-slate-50/80 px-4 py-2.5 rounded-2xl border border-slate-100/50 backdrop-blur-sm truncate">
+            <svg class="h-4 w-4 shrink-0 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            </svg>
+            <span class="truncate">{{ m.user.email }}</span>
+          </div>
+        </div>
+        
+        <div class="pt-6 border-t border-slate-100 flex items-center justify-between relative">
+          <div class="flex flex-col">
+            <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Joined</span>
+            <span class="text-xs font-bold text-slate-700 mt-1">{{ m.joinedAt | date:'MMM d, yyyy' }}</span>
+          </div>
+          
+          <div *ngIf="isAdminOrManager" class="relative">
+            <select [(ngModel)]="m.role" (change)="onRoleChange(m, m.role)"
+                    class="bg-white border border-slate-200 text-[10px] font-black text-slate-600 rounded-xl pl-3 pr-8 h-9 outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-100 cursor-pointer appearance-none transition-all shadow-sm
+                    bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width=%2210%22%20height=%225%22%20viewBox=%220%200%2010%205%22%20xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cpath%20d=%22M0%200l5%205%205-5z%22%20fill=%22%2394a3b8%22/%3E%3C/svg%3E')] bg-no-repeat bg-[100%_center] bg-[length:10px_5px] bg-[position:right_10px_center]">
+              <option value="LEADER">LEADER</option>
+              <option value="MEMBER">MEMBER</option>
+            </select>
+          </div>
+        </div>
+        
+      </div>
+    </div>
+</div>
+
+<!-- Add Member Modal -->
+<div *ngIf="isAddModalOpen" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-fade-in">
+  <div class="bg-white w-full max-w-md rounded-[2.5rem] shadow-2xl p-8 animate-zoom-in relative">
+    
+    <button (click)="closeAddModal()" class="absolute top-6 right-6 p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors cursor-pointer">
+      <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+    </button>
+    
+    <div class="mb-8">
+      <div class="h-12 w-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mb-6">
+        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+        </svg>
+      </div>
+      <h2 class="text-2xl font-black text-slate-900 tracking-tight">Add Team Member</h2>
+      <p class="text-xs font-bold text-slate-400 mt-2 uppercase tracking-widest">Select user to add to this project</p>
+    </div>
+    
+    <div *ngIf="error" class="mb-4 text-xs font-bold text-rose-500 bg-rose-50 p-3 rounded-xl border border-rose-100 animate-shake">
+      {{ error }}
+    </div>
+
+    <!-- User Select -->
+    <div class="space-y-2 mb-6 relative">
+      <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Select User</label>
+      <div *ngIf="isLoadingAvailable" class="p-4 bg-slate-50 border border-slate-100 rounded-2xl text-xs font-bold text-slate-500 text-center animate-pulse flex items-center justify-center gap-3 h-[58px]">
+        <div class="h-4 w-4 border-2 border-slate-300 border-t-slate-600 rounded-full animate-spin"></div>
+        Loading users...
+      </div>
+      <select *ngIf="!isLoadingAvailable" [(ngModel)]="selectedUserId" 
+              class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 text-sm font-bold text-slate-800 outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-100 transition-all appearance-none cursor-pointer
+              bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width=%2210%22%20height=%225%22%20viewBox=%220%200%2010%205%22%20xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cpath%20d=%22M0%200l5%205%205-5z%22%20fill=%22%2394a3b8%22/%3E%3C/svg%3E')] bg-no-repeat bg-[100%_center] bg-[length:12px_6px] bg-[position:right_20px_center]">
+        <option [ngValue]="null" disabled selected>-- Choose a user --</option>
+        <option *ngFor="let u of availableUsers" [ngValue]="u.id">{{ u.username }} ({{ u.email }})</option>
+      </select>
+      <div *ngIf="!isLoadingAvailable && availableUsers.length === 0" class="text-[10px] font-bold text-slate-400 mt-2 ml-1 italic">
+        All system users are already in this project.
+      </div>
+    </div>
+    
+    <!-- Role Select -->
+    <div class="space-y-2 mb-8" *ngIf="!isLoadingAvailable && availableUsers.length > 0">
+      <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Assign Role</label>
+      <select [(ngModel)]="selectedRole" 
+              class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 text-sm font-bold text-slate-800 outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-100 transition-all appearance-none cursor-pointer
+              bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width=%2210%22%20height=%225%22%20viewBox=%220%200%2010%205%22%20xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cpath%20d=%22M0%200l5%205%205-5z%22%20fill=%22%2394a3b8%22/%3E%3C/svg%3E')] bg-no-repeat bg-[100%_center] bg-[length:12px_6px] bg-[position:right_20px_center]">
+        <option value="MEMBER">Member</option>
+        <option value="LEADER">Leader</option>
+      </select>
+    </div>
+
+    <div class="flex gap-4">
+      <button (click)="closeAddModal()" class="flex-1 py-4 bg-slate-100 text-slate-500 font-black rounded-2xl hover:bg-slate-200 transition-all uppercase text-[11px] tracking-widest">
+        Cancel
+      </button>
+      <button (click)="onAddMember()" [disabled]="!selectedUserId || isAdding"
+              class="flex-1 py-4 bg-blue-600 text-white font-black rounded-2xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-600/20 active:scale-95 disabled:opacity-50 disabled:active:scale-100 uppercase text-[11px] tracking-widest flex items-center justify-center gap-2">
+        <div *ngIf="isAdding" class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+        {{ isAdding ? 'Adding...' : 'Add Member' }}
+      </button>
+    </div>
+  </div>
+</div>
