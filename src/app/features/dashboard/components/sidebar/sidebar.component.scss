@@ -1,0 +1,54 @@
+:host {
+  display: block;
+  height: 100%;
+}
+
+aside {
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+  
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background-color: #cbd5e1;
+    border-radius: 20px;
+    border: 3px solid transparent;
+  }
+}
+
+// Active state refined
+.nav-link-active {
+  background-color: rgba(37, 99, 235, 0.08) !important; // tailwind blue-600 with 8% opacity
+  color: #0052cc !important; 
+  border-left: 3px solid #0052cc;
+  
+  svg {
+    color: #0052cc;
+  }
+}
+
+// Mobile Drawer logic (Conceptual for now, would need a service for real toggle)
+@media (max-width: 768px) {
+  aside {
+    position: fixed;
+    top: 0;
+    left: -100%;
+    height: 100vh;
+    z-index: 100;
+    
+    &.mobile-open {
+      left: 0;
+      width: 284px;
+    }
+  }
+}
