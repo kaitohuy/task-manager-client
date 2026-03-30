@@ -1,0 +1,56 @@
+<div class="p-4 lg:p-8 flex flex-col gap-6 bg-slate-50 dark:bg-slate-950 h-full text-slate-950 dark:text-slate-50">
+      <!-- Header Area -->
+      <div>
+        <h1 class="text-3xl font-bold mb-2">My Tasks</h1>
+        <p class="text-slate-500 dark:text-slate-400">
+          You have {{ myTasks.length }} task{{ myTasks.length !== 1 ? 's' : '' }}
+        </p>
+      </div>
+
+      <!-- Search and Filters (Page Level) -->
+      <div class="mb-4 flex flex-col gap-4 md:flex-row md:items-center md:justify-between w-full bg-white p-4 rounded-xl border border-slate-200 shadow-sm shrink-0">
+        <div class="relative flex-1 md:max-w-xs">
+          <svg class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+          <input type="text" 
+                 [ngModel]="searchQuery"
+                 (ngModelChange)="setSearchQuery($event)"
+                 placeholder="Search your tasks..." 
+                 class="w-full bg-slate-50 border border-slate-200 rounded-md py-1.5 pl-10 pr-4 text-sm focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600/20 transition-all font-medium" />
+        </div>
+
+        <div class="flex flex-wrap items-center gap-3">
+          <select [ngModel]="statusFilter" 
+                  (ngModelChange)="setStatusFilter($event)"
+                  class="bg-white border border-slate-200 text-slate-600 text-xs font-bold rounded-md px-3 py-1.5 focus:outline-none focus:border-blue-600 transition-colors uppercase tracking-tight">
+            <option value="all">All Statuses</option>
+            <option value="TODO">To Do</option>
+            <option value="IN_PROGRESS">In Progress</option>
+            <option value="DONE">Done</option>
+            <option value="PAUSED">Paused</option>
+            <option value="CANCELLED">Cancelled</option>
+          </select>
+
+          <select [ngModel]="sortBy" 
+                  (ngModelChange)="setSortBy($event)"
+                  class="bg-white border border-slate-200 text-slate-600 text-xs font-bold rounded-md px-3 py-1.5 focus:outline-none focus:border-blue-600 transition-colors uppercase tracking-tight">
+            <option value="deadline-asc">Deadline: Soon</option>
+            <option value="deadline-desc">Deadline: Later</option>
+            <option value="priority-high">Priority: High</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Kanban Board -->
+      <div class="flex-1 min-h-0">
+        <app-kanban-board 
+          [tasks]="filteredAndSortedTasks" 
+          (onTaskClick)="handleTaskClick($event)">
+        </app-kanban-board>
+      </div>
+    </div>
+
+    <!-- Task Detail Right Panel -->
+    <app-task-detail-panel
+      [task]="selectedTask"
+      (closePanel)="closeTaskDetail()">
+    </app-task-detail-panel>

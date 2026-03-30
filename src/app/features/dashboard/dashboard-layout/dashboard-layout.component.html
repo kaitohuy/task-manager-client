@@ -1,0 +1,43 @@
+<div *ngIf="loading" class="flex items-center justify-center h-screen w-screen bg-slate-50 dark:bg-slate-950">
+  <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-slate-900 dark:border-slate-50"></div>
+</div>
+
+<div *ngIf="!loading" class="h-screen flex flex-col overflow-hidden bg-slate-50 dark:bg-slate-950">
+  <!-- Top Navbar -->
+  <app-dashboard-header 
+    [currentUser]="currentUser()" 
+    [projects]="projects"
+    [activeProjectName]="activeBreadcrumb"
+    (onCreateTask)="handleCreateTask()"
+    (onCreateProject)="handleCreateProject()"
+    (onLogout)="handleLogout()">
+  </app-dashboard-header>
+
+  <div class="flex-1 flex overflow-hidden">
+    <!-- Desktop Sidebar -->
+    <aside class="hidden lg:flex flex-col h-full shrink-0">
+      <app-sidebar 
+        [projects]="projects"
+        [taskCount]="myTasksCount"
+        [currentUser]="currentUser()">
+      </app-sidebar>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 overflow-y-auto">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>
+
+<!-- Global Task Form Modal (Create/Edit) -->
+<app-task-form 
+  *ngIf="showTaskModal" 
+  [task]="editingTask"
+  [projectId]="selectedProjectId"
+  [defaultDeadline]="defaultDeadline"
+  (onSubmitSuccess)="handleTaskSuccess()" 
+  (onCancel)="closeTaskModal()">
+</app-task-form>
+
+<app-meeting-form></app-meeting-form>

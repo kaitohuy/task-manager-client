@@ -1,0 +1,13 @@
+<div cdkDropListGroup class="h-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 items-stretch overflow-x-auto pb-8 custom-scrollbar">
+  <app-kanban-column
+    *ngFor="let col of columns"
+    [status]="col.status"
+    [label]="col.title"
+    [tasks]="col.tasks"
+    [bgClass]="col.bgClass"
+    [textClass]="col.textClass"
+    [badgeClass]="col.badgeClass"
+    (onTaskClick)="onTaskClick.emit($event)"
+    (onDrop)="onDrop($event)"
+  ></app-kanban-column>
+</div>

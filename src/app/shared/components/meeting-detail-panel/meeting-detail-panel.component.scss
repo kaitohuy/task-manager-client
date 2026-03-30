@@ -1,0 +1,55 @@
+:host {
+  display: block;
+}
+
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #e2e8f0 transparent;
+  
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background-color: #e2e8f0;
+    border-radius: 20px;
+    border: 3px solid transparent;
+  }
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.animate-in {
+  animation-duration: 300ms;
+  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  animation-fill-mode: forwards;
+}
+
+.fade-in { animation-name: fadeIn; }
+
+/* Higher Button Pacing */
+.p-y-4-5, .py-5 {
+  padding-top: 1.125rem;
+  padding-bottom: 1.125rem;
+}
+
+/* Shadow Refinement */
+.shadow-2xl {
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+.ring-8 {
+  box-shadow: 0 0 0 8px rgba(238, 242, 255, 0.5);
+}
+
+.ring-indigo-soft {
+  --tw-ring-color: rgba(238, 242, 255, 0.5);
+}
