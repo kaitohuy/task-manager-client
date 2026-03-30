@@ -1,0 +1,126 @@
+:host { display: block; height: 100%; }
+
+::ng-deep .fc {
+  font-family: inherit;
+  --fc-border-color: #cbd5e1 !important; /* Prominent Slate-300 border color */
+  --fc-today-bg-color: rgba(239, 246, 255, 0.8); /* Sidebar blue-50/80 */
+  --fc-button-bg-color: #ffffff;
+  --fc-button-border-color: #bfdbfe;
+  --fc-button-text-color: #475569;
+  --fc-button-hover-bg-color: #eff6ff;
+  --fc-button-active-bg-color: #ffffff;
+  --fc-button-active-border-color: #3b82f6;
+  --fc-button-active-text-color: #2563eb;
+  height: 100%;
+}
+
+::ng-deep .fc .fc-toolbar-title { font-weight: 900; color: #1e40af; letter-spacing: -0.01em; font-size: 1.15rem; }
+::ng-deep .fc .fc-toolbar { margin-bottom: 1.5rem !important; }
+
+/* Grid Area Background moved to harness to avoid obscuring borders */
+::ng-deep .fc-view-harness {
+   background-color: #f1f5f9 !important; 
+}
+
+/* Vertical lines for day separation (Final Robust Fix) */
+::ng-deep .fc-theme-standard .fc-scrollgrid,
+::ng-deep .fc-theme-standard .fc-scrollgrid-section table {
+  border-collapse: collapse !important;
+}
+
+::ng-deep .fc-theme-standard .fc-timegrid-col,
+::ng-deep .fc-theme-standard .fc-col-header-cell,
+::ng-deep .fc-theme-standard .fc-daygrid-day {
+  border-right: 1px solid #cbd5e1 !important;
+  border-left: none !important;
+}
+
+::ng-deep .fc-theme-standard .fc-scrollgrid-section-header th {
+  border-bottom: 1px solid #cbd5e1 !important;
+}
+
+/* Header (Days) & Sidebar (Time Column) Styling */
+::ng-deep .fc .fc-col-header, 
+::ng-deep .fc .fc-timegrid-slot-label {
+   background: linear-gradient(to bottom, #eff6ff, #dbeafe) !important; 
+}
+
+::ng-deep .fc .fc-timegrid-slot-label-cushion { font-weight: 800; color: #1e40af; font-size: 0.7rem; }
+
+::ng-deep .fc .fc-col-header-cell-cushion { 
+  font-weight: 900; 
+  color: #1e40af; 
+  text-transform: uppercase; 
+  font-size: 0.75rem; 
+  padding: 16px 0 !important; 
+  letter-spacing: 0.05em; 
+}
+
+::ng-deep .fc-event { 
+  cursor: pointer; 
+  border-width: 1px !important; 
+  border-radius: 12px !important; 
+  padding: 0 !important; 
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
+  margin: 2px 4px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  overflow: hidden;
+  background: none !important; /* Managed by eventContent */
+}
+
+::ng-deep .fc-event:hover {
+  transform: scale(1.02) translateX(2px);
+  box-shadow: 0 12px 24px rgba(0,0,0,0.08) !important;
+  filter: brightness(1.05);
+  z-index: 50;
+}
+
+::ng-deep .fc-event-title { font-weight: 800 !important; font-size: 0.8rem !important; margin-top: 2px; }
+
+::ng-deep .fc-event-time { 
+  font-weight: 700 !important; 
+  font-size: 0.65rem !important; 
+  padding: 2px 6px; 
+  background: rgba(255,255,255,0.25);
+  border-radius: 6px;
+  width: fit-content;
+}
+
+::ng-deep .fc-daygrid-event-dot { display: none; }
+::ng-deep .fc-day-today { background-color: transparent !important; }
+::ng-deep .fc-daygrid-day-number { font-weight: 800; color: #64748b; font-size: 0.8rem; padding: 12px !important; }
+
+::ng-deep .fc-day-today .fc-daygrid-day-number { 
+  background: #f1f5f9;
+  color: #3b82f6 !important;
+}
+
+::ng-deep .fc-timegrid-slot { height: 4rem !important; border-bottom: 1px dashed #f1f5f9 !important; }
+::ng-deep .fc-timegrid-now-indicator-line { border-color: #3b82f6 !important; border-width: 2px !important; }
+::ng-deep .fc-timegrid-now-indicator-arrow { border-color: #3b82f6 !important; }
+
+/* Overlap / Floating logic */
+::ng-deep .task-event {
+  z-index: 100 !important;
+}
+
+::ng-deep .meeting-event {
+  z-index: 50 !important;
+}
+
+/* Force tasks to take full width and float on top, overriding FullCalendar's auto-split */
+::ng-deep .fc-timegrid-event-harness.task-harness {
+  width: 100% !important;
+  left: 0 !important;
+  right: 0 !important;
+  margin-left: 0 !important;
+  z-index: 100 !important;
+}
+
+::ng-deep .task-event {
+  width: 100% !important;
+}
+
+::ng-deep .fc-timegrid-event-harness.meeting-event {
+  z-index: 50 !important;
+}
