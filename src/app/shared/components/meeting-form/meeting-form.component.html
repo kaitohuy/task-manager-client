@@ -1,0 +1,101 @@
+<div *ngIf="showModal" class="fixed inset-0 z-[150] flex items-center justify-center animate-in fade-in duration-300">
+  <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" (click)="close()"></div>
+  
+  <div class="relative bg-white w-full max-w-lg mx-4 rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
+    <!-- Header -->
+    <div class="px-8 pt-8 pb-6 flex items-center justify-between">
+      <div>
+        <h2 class="text-2xl font-black text-slate-900 tracking-tight mb-1">Schedule Meeting</h2>
+        <p class="text-[13px] font-bold text-slate-400 uppercase tracking-widest">Connect with your team</p>
+      </div>
+      <button (click)="close()" class="p-2 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded-full transition-all">
+        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M6 18L18 6M6 6l12 12" /></svg>
+      </button>
+    </div>
+
+    <!-- Form Body -->
+    <div class="px-8 pb-8 max-h-[70vh] overflow-y-auto custom-scrollbar">
+      <form (ngSubmit)="onSubmit()" #meetingForm="ngForm" class="space-y-6">
+        
+        <!-- Title -->
+        <div>
+          <label class="block text-[11px] font-black uppercase tracking-widest text-slate-500 mb-2 ml-1">Meeting Title</label>
+          <input [(ngModel)]="meetingData.title" name="title" type="text" required placeholder="e.g. Weekly Sync"
+                 class="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-3.5 text-[15px] font-bold text-slate-800 outline-none focus:ring-4 focus:ring-indigo-600/10 focus:border-indigo-600 transition-all shadow-sm">
+        </div>
+
+        <!-- Project Selection -->
+        <div>
+          <label class="block text-[11px] font-black uppercase tracking-widest text-slate-500 mb-2 ml-1">Project</label>
+          <div class="relative">
+            <select [(ngModel)]="meetingData.projectId" name="projectId" required (change)="onProjectChange()"
+                    class="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-3.5 text-[15px] font-bold text-slate-800 outline-none focus:ring-4 focus:ring-indigo-600/10 focus:border-indigo-600 transition-all shadow-sm appearance-none cursor-pointer">
+              <option [value]="0" disabled>Select a project</option>
+              <option *ngFor="let p of projects" [value]="p.id">{{ p.name }}</option>
+            </select>
+            <svg class="h-5 w-5 absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M19 9l-7 7-7-7" /></svg>
+          </div>
+        </div>
+
+        <!-- Participants Selection -->
+        <div *ngIf="meetingData.projectId > 0" class="animate-in slide-in-from-top-2 duration-300">
+          <label class="block text-[11px] font-black uppercase tracking-widest text-slate-500 mb-3 ml-1">Invite Participants</label>
+          <div class="grid grid-cols-4 gap-3 bg-slate-50 p-4 rounded-3xl border border-slate-100">
+            <button type="button" *ngFor="let member of projectMembers" 
+                    (click)="toggleParticipant(member.user.id)"
+                    class="group flex flex-col items-center gap-2 transition-all p-1"
+                    [title]="member.user.fullName">
+              <div class="relative">
+                <div class="w-12 h-12 rounded-full overflow-hidden border-2 transition-all shadow-sm"
+                     [ngClass]="selectedMemberIds.has(member.user.id) ? 'border-indigo-600 ring-4 ring-indigo-600/10' : 'border-white'">
+                  <img *ngIf="member.user.imageUrl" [src]="member.user.imageUrl" class="w-full h-full object-cover">
+                  <div *ngIf="!member.user.imageUrl" class="w-full h-full bg-slate-200 flex items-center justify-center text-xs font-black text-slate-500">
+                    {{ member.user.username.substring(0, 2).toUpperCase() }}
+                  </div>
+                </div>
+                <!-- Selection State -->
+                <div *ngIf="selectedMemberIds.has(member.user.id)" 
+                     class="absolute -right-1 -bottom-1 w-5 h-5 bg-indigo-600 text-white rounded-full flex items-center justify-center shadow-lg animate-in zoom-in duration-200">
+                  <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="4"><path d="M5 13l4 4L19 7" /></svg>
+                </div>
+              </div>
+              <span class="text-[10px] font-black text-slate-600 truncate w-full text-center">{{ member.user.username }}</span>
+            </button>
+            <div *ngIf="projectMembers.length === 0" class="col-span-4 py-4 text-center text-xs font-bold text-slate-400">
+              No other members to invite.
+            </div>
+          </div>
+        </div>
+
+        <!-- Time Range -->
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-[11px] font-black uppercase tracking-widest text-slate-500 mb-2 ml-1">Start Time</label>
+            <input [(ngModel)]="meetingData.startTime" name="startTime" type="datetime-local" required
+                   class="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-3.5 text-[13px] font-bold text-slate-800 outline-none focus:ring-4 focus:ring-indigo-600/10 focus:border-indigo-600 transition-all shadow-sm">
+          </div>
+          <div>
+            <label class="block text-[11px] font-black uppercase tracking-widest text-slate-500 mb-2 ml-1">End Time</label>
+            <input [(ngModel)]="meetingData.endTime" name="endTime" type="datetime-local" required
+                   class="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-3.5 text-[13px] font-bold text-slate-800 outline-none focus:ring-4 focus:ring-indigo-600/10 focus:border-indigo-600 transition-all shadow-sm">
+          </div>
+        </div>
+
+        <!-- Description -->
+        <div>
+          <label class="block text-[11px] font-black uppercase tracking-widest text-slate-500 mb-2 ml-1">Agenda / Description</label>
+          <textarea [(ngModel)]="meetingData.description" name="description" rows="3" placeholder="What's the meeting about?"
+                    class="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-3.5 text-[15px] font-bold text-slate-800 outline-none focus:ring-4 focus:ring-indigo-600/10 focus:border-indigo-600 transition-all shadow-sm resize-none"></textarea>
+        </div>
+
+        <!-- Submit -->
+        <div class="pt-4 pb-2">
+          <button type="submit" [disabled]="!meetingForm.form.valid || isSubmitting"
+                  class="w-full bg-indigo-600 text-white py-4 rounded-2xl text-[14px] font-black uppercase tracking-widest shadow-xl shadow-indigo-600/20 hover:bg-indigo-700 active:scale-[0.98] transition-all disabled:opacity-50 disabled:pointer-events-none">
+            {{ isSubmitting ? 'Scheduling...' : 'Schedule Meeting' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
