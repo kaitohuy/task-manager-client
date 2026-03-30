@@ -1,0 +1,32 @@
+<div [id]="status"
+     cdkDropList
+     [cdkDropListData]="tasks"
+     (cdkDropListDropped)="onDrop.emit($event)"
+     [ngClass]="['h-full min-h-[600px] flex flex-col rounded-[2rem] p-5 transition-all duration-300', bgClass]">
+      <!-- Column Header -->
+      <div class="flex items-center justify-between mb-6 pb-2 border-b border-black/5 shrink-0">
+        <div class="flex items-center gap-3">
+          <h3 [ngClass]="['font-black text-xs uppercase tracking-widest', textClass]">{{ label }}</h3>
+          <span [ngClass]="['px-2.5 py-1 rounded-lg text-[10px] font-black', badgeClass, textClass]">
+            {{ tasks.length }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Tasks area stretches to fill height -->
+      <div class="flex-1 flex flex-col min-h-0">
+        <div *ngIf="tasks.length === 0" class="flex-1 flex items-center justify-center">
+          <app-empty-state [title]="'No ' + label.toLowerCase() + ' tasks'" description=""></app-empty-state>
+        </div>
+
+        <div *ngIf="tasks.length > 0" class="space-y-5 flex-1 overflow-y-auto pr-1 -mr-1 custom-scrollbar">
+          <app-task-card 
+            *ngFor="let task of tasks; let i = index" 
+            [task]="task" 
+            [itemIndex]="i"
+            [totalItems]="tasks.length"
+            (onClick)="onTaskClick.emit($event)">
+          </app-task-card>
+        </div>
+      </div>
+    </div>
