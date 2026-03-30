@@ -1,0 +1,153 @@
+<div class="login-page-container min-h-screen relative flex items-center justify-center p-4">
+  <!-- Dynamic Background with Overlay -->
+  <div class="absolute inset-0 z-[-1] overflow-hidden bg-slate-900">
+    <div class="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-100 scale-100" 
+         style="background-image: url('/images/login_background.png');">
+    </div>
+    <div class="absolute inset-0 bg-gradient-to-tr from-white/60 via-blue-50/30 to-indigo-50/40"></div>
+  </div>
+
+  <div class="relative w-full max-w-xl animate-fade-in group">
+    <!-- Main Glass Card -->
+    <div class="glass-card overflow-hidden bg-[#fafafa] rounded-[2.5rem] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.1)] transition-all duration-500 border border-[#eaeaea]">
+      
+      <!-- Card Header / Toggle -->
+      <div class="p-8 pb-0 text-center">
+        <div class="inline-flex p-1.5 bg-indigo-50/80 rounded-2xl mb-8 shadow-inner">
+          <button (click)="isLoginMode = true; error = null; successMessage = null" 
+                  [class]="isLoginMode ? 'bg-[#5e42d6] text-white shadow-lg' : 'text-slate-500 hover:text-slate-700'"
+                  class="px-8 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300">
+            Login
+          </button>
+          <button (click)="isLoginMode = false; error = null; successMessage = null" 
+                  [class]="!isLoginMode ? 'bg-[#5e42d6] text-white shadow-lg' : 'text-slate-500 hover:text-slate-700'"
+                  class="px-8 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300">
+            Register
+          </button>
+        </div>
+
+        <h2 class="text-4xl font-black text-slate-800 tracking-tighter mb-2 text-center">
+          {{ isLoginMode ? 'Welcome Back' : 'Join Task Manager System' }}
+        </h2>
+        <p class="text-slate-400 text-[10px] font-black uppercase tracking-[0.3em] text-center">
+          {{ isLoginMode ? 'Please fill in your details to get started' : 'Create an account to manage your work' }}
+        </p>
+      </div>
+
+      <!-- Alerts -->
+      <div class="px-8 mt-6">
+        <div *ngIf="error || (fieldErrors && getErrorKeys().length > 0)" class="bg-rose-50 border border-rose-200 text-rose-700 px-6 py-4 rounded-2xl text-[11px] font-bold flex items-center gap-4 animate-shake shadow-sm">
+          <svg class="h-5 w-5 opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+          {{ error }}
+        </div>
+        <div *ngIf="successMessage" class="bg-emerald-50 border border-emerald-200 text-emerald-700 px-6 py-4 rounded-2xl text-[11px] font-bold flex items-center gap-4 animate-slide-up shadow-sm">
+          <svg class="h-5 w-5 opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+          {{ successMessage }}
+        </div>
+      </div>
+
+      <!-- Login Form -->
+      <form *ngIf="isLoginMode" (ngSubmit)="handleLogin()" class="p-8 space-y-6" autocomplete="off">
+        <div class="space-y-4">
+          <div class="relative group">
+            <label class="auth-label">Username</label>
+            <input name="username" [(ngModel)]="loginData.identifier"
+                   class="auth-input" placeholder="Username or Email" />
+          </div>
+
+          <div class="relative group">
+            <div class="flex justify-between items-center mb-2">
+              <label class="auth-label">Password</label>
+              <a href="#" (click)="onForgotPassword($event)" class="text-[10px] font-bold text-indigo-400 hover:text-indigo-300 transition-colors uppercase tracking-widest">
+                Forgot password?
+              </a>
+            </div>
+            <div class="relative">
+              <input [type]="showPassword ? 'text' : 'password'" name="password" [(ngModel)]="loginData.password"
+                     class="auth-input pr-12" placeholder="••••••••" />
+              <button type="button" (click)="showPassword = !showPassword" 
+                      class="absolute right-4 top-1/2 -translate-y-1/2 p-2 text-indigo-600 hover:text-indigo-800 transition-all hover:scale-110">
+                <svg *ngIf="!showPassword" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                <svg *ngIf="showPassword" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" /></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <button type="submit" [disabled]="isLoading" class="auth-btn-primary">
+          <div *ngIf="isLoading" class="w-5 h-5 border-2 border-slate-900/30 border-t-slate-900 rounded-full animate-spin"></div>
+          {{ isLoading ? 'Processing...' : 'Sign In' }}
+        </button>
+      </form>
+
+      <!-- Register Form (Expanded for all CreateUserDTO fields) -->
+      <form *ngIf="!isLoginMode" (ngSubmit)="handleRegister()" class="p-8 pt-4 space-y-6 max-h-[60vh] overflow-y-auto custom-scrollbar" autocomplete="off">
+        <div class="grid md:grid-cols-2 gap-4">
+          <div class="space-y-1.5">
+            <label class="auth-label">Username *</label>
+            <input name="reg_user" [(ngModel)]="registerData.username" class="auth-input" />
+            <p *ngIf="fieldErrors?.username" class="text-rose-400 text-[10px] font-bold uppercase tracking-widest mt-1 ml-1">{{ fieldErrors.username }}</p>
+          </div>
+          <div class="space-y-1.5">
+            <label class="auth-label">Password *</label>
+            <div class="relative">
+              <input [type]="showRegisterPassword ? 'text' : 'password'" name="reg_pass" [(ngModel)]="registerData.password" class="auth-input pr-12" />
+              <button type="button" (click)="showRegisterPassword = !showRegisterPassword" 
+                      class="absolute right-4 top-1/2 -translate-y-1/2 p-2 text-indigo-600 hover:text-indigo-800 transition-all hover:scale-110">
+                <svg *ngIf="!showRegisterPassword" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                <svg *ngIf="showRegisterPassword" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" /></svg>
+              </button>
+            </div>
+          </div>
+          <div class="space-y-1.5">
+            <label class="auth-label">Full Name *</label>
+            <input name="reg_full" [(ngModel)]="registerData.fullName" class="auth-input" />
+          </div>
+          <div class="space-y-1.5">
+            <label class="auth-label">Email *</label>
+            <input type="email" name="reg_email" [(ngModel)]="registerData.email" class="auth-input" />
+            <p *ngIf="fieldErrors?.email" class="text-rose-400 text-[10px] font-bold uppercase tracking-widest mt-1 ml-1">{{ fieldErrors.email }}</p>
+          </div>
+          <div class="space-y-1.5">
+            <label class="auth-label">Phone Number</label>
+            <input name="reg_phone" [(ngModel)]="registerData.phone" class="auth-input" />
+          </div>
+          <div class="space-y-1.5">
+            <label class="auth-label">Gender</label>
+            <div class="relative group">
+              <select name="reg_gender" [(ngModel)]="registerData.gender" class="auth-input appearance-none pr-10">
+                <option value="MALE" class="bg-white text-slate-800">Male</option>
+                <option value="FEMALE" class="bg-white text-slate-800">Female</option>
+                <option value="OTHER" class="bg-white text-slate-800">Other</option>
+              </select>
+              <div class="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 group-hover:text-indigo-500 transition-colors">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" /></svg>
+              </div>
+            </div>
+          </div>
+          <div class="space-y-1.5 md:col-span-2">
+            <label class="auth-label">Date of Birth *</label>
+            <div class="relative group">
+              <input type="date" name="reg_dob" [(ngModel)]="registerData.dob" 
+                     class="auth-input block w-full" />
+            </div>
+          </div>
+          <div class="space-y-1.5 md:col-span-2">
+            <label class="auth-label">Permanent Address</label>
+            <input name="reg_addr" [(ngModel)]="registerData.address" class="auth-input" />
+          </div>
+        </div>
+
+        <button type="submit" [disabled]="isLoading" class="auth-btn-primary mt-4">
+          <div *ngIf="isLoading" class="w-5 h-5 border-2 border-slate-900/30 border-t-slate-900 rounded-full animate-spin"></div>
+          {{ isLoading ? 'Registering...' : 'Create Member Account' }}
+        </button>
+      </form>
+
+      <!-- Info -->
+      <div class="p-8 pt-0 border-t border-slate-100 mt-4 flex items-center justify-center">
+         <p class="text-[10px] font-black text-slate-300 uppercase tracking-widest text-center">Task Manager Engine v2.0</p>
+      </div>
+    </div>
+  </div>
+</div>
