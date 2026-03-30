@@ -1,0 +1,18 @@
+<div [ngClass]="['rounded-xl border border-slate-200 bg-white text-slate-950 shadow dark:border-slate-800 dark:bg-slate-950 dark:text-slate-50', className]">
+      
+      <!-- Header -->
+      <div *ngIf="title || description" class="flex flex-col space-y-1.5 p-6">
+        <h3 *ngIf="title" class="font-semibold leading-none tracking-tight">{{ title }}</h3>
+        <p *ngIf="description" class="text-sm text-slate-500 dark:text-slate-400">{{ description }}</p>
+      </div>
+
+      <!-- Content -->
+      <div [ngClass]="['p-6 pt-0', contentClassName]">
+        <ng-content></ng-content>
+      </div>
+      
+      <!-- Footer (Use ng-content select) -->
+      <div *ngIf="hasFooter" class="flex items-center p-6 pt-0">
+        <ng-content select="[card-footer]"></ng-content>
+      </div>
+    </div>
