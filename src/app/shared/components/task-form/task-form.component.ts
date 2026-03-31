@@ -54,7 +54,8 @@ export class TaskFormComponent implements OnInit {
         status: this.task.status,
         deadline: this.task.deadline ? this.task.deadline.substring(0, 16) : '',
         projectId: this.task.projectId,
-        assigneeId: this.task.assignee?.id
+        assigneeId: this.task.assignee?.id,
+        version: this.task.version
       };
       this.loadProjectMembers(this.task.projectId);
     } else {
@@ -133,6 +134,11 @@ export class TaskFormComponent implements OnInit {
       error: (err) => {
         console.error('Task save error:', err);
         const errorBody = err?.error;
+        
+        if (err.status === 409) {
+          this.error = 'Lỗi đồng bộ: Task đã bị thay đổi bởi người khác. Vui lòng tải lại trang.';
+          return;
+        }
         
         if (errorBody && typeof errorBody === 'object') {
           if (errorBody.errors) {

@@ -21,6 +21,16 @@
                class="bg-white border border-slate-200 rounded-2xl h-11 pl-10 pr-4 text-sm font-bold text-slate-800 w-64 focus:outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-100 transition-all shadow-sm" />
       </div>
       
+      <!-- Sort Members -->
+      <select [(ngModel)]="memberSort" (change)="loadMembers()"
+              class="bg-white border border-slate-200 rounded-2xl px-4 h-11 text-sm font-bold text-slate-800 outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-100 transition-all appearance-none cursor-pointer shadow-sm min-w-[140px]
+              bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width=%2210%22%20height=%225%22%20viewBox=%220%200%2010%205%22%20xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cpath%20d=%22M0%200l5%205%205-5z%22%20fill=%22%2394a3b8%22/%3E%3C/svg%3E')] bg-no-repeat bg-[100%_center] bg-[length:10px_5px] bg-[position:right_10px_center]">
+        <option value="joinedAt,desc">Newest First</option>
+        <option value="joinedAt,asc">Oldest First</option>
+        <option value="role,asc">Role</option>
+        <option value="username,asc">Username (A-Z)</option>
+      </select>
+      
       <button *ngIf="isAdminOrManager" (click)="openAddModal()" 
               class="bg-blue-600 text-white px-6 h-11 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-blue-700 transition-all shadow-lg shadow-blue-600/20 active:scale-95 flex items-center gap-2">
         <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
@@ -130,6 +140,16 @@
         
       </div>
     </div>
+    
+    <!-- Members Pagination -->
+    <div *ngIf="memberTotalPages > 1" class="mt-2 flex justify-center gap-2 pb-10">
+      <button *ngFor="let p of memberPageRange" 
+              (click)="goToMemberPage(p)"
+              [class]="memberCurrentPage === p ? 'bg-blue-600 text-white' : 'bg-white text-slate-700 hover:bg-slate-50'"
+              class="w-10 h-10 rounded-xl text-sm font-black shadow-sm transition-all border border-slate-200">
+        {{ p + 1 }}
+      </button>
+    </div>
 </div>
 
 <!-- Add Member Modal -->
@@ -154,32 +174,68 @@
       {{ error }}
     </div>
 
-    <!-- User Select -->
+    <!-- User List -->
     <div class="space-y-2 mb-6 relative">
-      <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Select User</label>
-      <div *ngIf="isLoadingAvailable" class="p-4 bg-slate-50 border border-slate-100 rounded-2xl text-xs font-bold text-slate-500 text-center animate-pulse flex items-center justify-center gap-3 h-[58px]">
+      <div class="flex justify-between items-end mb-2">
+        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Select Users</label>
+        <span class="text-[10px] font-bold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-lg">{{ selectedUserIds.length }} selected</span>
+      </div>
+      
+      <div *ngIf="isLoadingAvailable" class="p-4 bg-slate-50 border border-slate-100 rounded-2xl text-xs font-bold text-slate-500 text-center animate-pulse flex items-center justify-center gap-3 h-[200px]">
         <div class="h-4 w-4 border-2 border-slate-300 border-t-slate-600 rounded-full animate-spin"></div>
         Loading users...
       </div>
-      <select *ngIf="!isLoadingAvailable" [(ngModel)]="selectedUserId" 
-              class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 text-sm font-bold text-slate-800 outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-100 transition-all appearance-none cursor-pointer
-              bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width=%2210%22%20height=%225%22%20viewBox=%220%200%2010%205%22%20xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cpath%20d=%22M0%200l5%205%205-5z%22%20fill=%22%2394a3b8%22/%3E%3C/svg%3E')] bg-no-repeat bg-[100%_center] bg-[length:12px_6px] bg-[position:right_20px_center]">
-        <option [ngValue]="null" disabled selected>-- Choose a user --</option>
-        <option *ngFor="let u of availableUsers" [ngValue]="u.id">{{ u.username }} ({{ u.email }})</option>
-      </select>
-      <div *ngIf="!isLoadingAvailable && availableUsers.length === 0" class="text-[10px] font-bold text-slate-400 mt-2 ml-1 italic">
+      
+      <!-- Users Checkbox List -->
+      <div *ngIf="!isLoadingAvailable && availableUsers.length > 0" class="max-h-[220px] overflow-y-auto custom-scrollbar pr-2 space-y-2">
+        <label *ngFor="let u of availableUsers"
+               class="flex items-center gap-3 p-3 rounded-xl border-2 transition-all cursor-pointer select-none"
+               [ngClass]="isUserSelected(u.id) ? 'border-blue-500 bg-blue-50/50' : 'border-slate-100 bg-white hover:border-slate-200'">
+          <div class="relative flex items-center justify-center w-5 h-5 rounded border border-slate-300 bg-white shadow-sm shrink-0"
+               [ngClass]="{'bg-blue-600 border-blue-600': isUserSelected(u.id)}">
+            <svg *ngIf="isUserSelected(u.id)" class="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+            <input type="checkbox" class="absolute inset-0 opacity-0 cursor-pointer"
+                   [checked]="isUserSelected(u.id)"
+                   (change)="toggleUserSelection(u.id)">
+          </div>
+          <div class="flex flex-col overflow-hidden">
+            <span class="text-sm font-bold text-slate-800 truncate">{{ u.fullName || u.username }}</span>
+            <span class="text-[10px] font-bold text-slate-400 truncate">{{ u.email }}</span>
+          </div>
+        </label>
+      </div>
+      
+      <div *ngIf="!isLoadingAvailable && availableUsers.length === 0" class="text-[10px] font-bold text-slate-400 mt-2 ml-1 italic border border-dashed border-slate-200 p-6 rounded-2xl text-center bg-slate-50">
         All system users are already in this project.
       </div>
+      
+      <!-- Available Users Pagination Dropdown Helpers -->
+      <div *ngIf="availableUsersTotalPages > 1" class="mt-4 flex justify-between items-center px-2 bg-slate-50 py-2 rounded-xl">
+         <button (click)="prevAvailableUsersPage($event)"
+                 [disabled]="availableUsersPage === 0"
+                 class="text-[11px] uppercase tracking-widest font-black text-blue-600 hover:text-blue-800 disabled:opacity-50 transition-colors px-3 py-1.5 hover:bg-blue-100 rounded-lg">
+            &larr; Prev
+         </button>
+         <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Page {{ availableUsersPage + 1 }} of {{ availableUsersTotalPages }}</span>
+         <button (click)="nextAvailableUsersPage($event)"
+                 [disabled]="availableUsersPage >= availableUsersTotalPages - 1"
+                 class="text-[11px] uppercase tracking-widest font-black text-blue-600 hover:text-blue-800 disabled:opacity-50 transition-colors px-3 py-1.5 hover:bg-blue-100 rounded-lg">
+            Next &rarr;
+         </button>
+      </div>
     </div>
-    
-    <!-- Role Select -->
-    <div class="space-y-2 mb-8" *ngIf="!isLoadingAvailable && availableUsers.length > 0">
-      <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Assign Role</label>
-      <select [(ngModel)]="selectedRole" 
-              class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 text-sm font-bold text-slate-800 outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-100 transition-all appearance-none cursor-pointer
+
+    <!-- Available Users Sort -->
+    <div class="space-y-2 mb-8 relative">
+      <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Sort available users</label>
+      <select [(ngModel)]="availableUsersSort" (change)="loadAvailableUsers()"
+              class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3 text-sm font-bold text-slate-800 outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-100 transition-all appearance-none cursor-pointer
               bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width=%2210%22%20height=%225%22%20viewBox=%220%200%2010%205%22%20xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cpath%20d=%22M0%200l5%205%205-5z%22%20fill=%22%2394a3b8%22/%3E%3C/svg%3E')] bg-no-repeat bg-[100%_center] bg-[length:12px_6px] bg-[position:right_20px_center]">
-        <option value="MEMBER">Member</option>
-        <option value="LEADER">Leader</option>
+        <option value="username,asc">Username (A-Z)</option>
+        <option value="username,desc">Username (Z-A)</option>
+        <option value="email,asc">Email (A-Z)</option>
       </select>
     </div>
 
@@ -187,7 +243,7 @@
       <button (click)="closeAddModal()" class="flex-1 py-4 bg-slate-100 text-slate-500 font-black rounded-2xl hover:bg-slate-200 transition-all uppercase text-[11px] tracking-widest">
         Cancel
       </button>
-      <button (click)="onAddMember()" [disabled]="!selectedUserId || isAdding"
+      <button (click)="onAddMember()" [disabled]="selectedUserIds.length === 0 || isAdding"
               class="flex-1 py-4 bg-blue-600 text-white font-black rounded-2xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-600/20 active:scale-95 disabled:opacity-50 disabled:active:scale-100 uppercase text-[11px] tracking-widest flex items-center justify-center gap-2">
         <div *ngIf="isAdding" class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
         {{ isAdding ? 'Adding...' : 'Add Member' }}

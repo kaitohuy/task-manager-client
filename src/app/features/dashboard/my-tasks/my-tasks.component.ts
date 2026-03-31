@@ -27,7 +27,7 @@ export class MyTasksComponent implements OnInit, OnDestroy {
   
   searchQuery = '';
   statusFilter = 'all';
-  sortBy = 'deadline-asc';
+  sortBy = 'deadline,asc';
 
   private projectSubscriptions: StompSubscription[] = [];
   private taskStreamSubscription: Subscription = new Subscription();
@@ -169,18 +169,18 @@ export class MyTasksComponent implements OnInit, OnDestroy {
     // Sort
     return filtered.sort((a, b) => {
       switch (this.sortBy) {
-        case 'deadline-asc':
-          return new Date(a.deadline).getTime() - new Date(b.deadline).getTime();
-        case 'deadline-desc':
-          return new Date(b.deadline).getTime() - new Date(a.deadline).getTime();
-        case 'priority-high': {
-          const order: Record<string, number> = { HIGH: 0, MEDIUM: 1, LOW: 2 };
-          return (order[a.priority || 'MEDIUM'] || 99) - (order[b.priority || 'MEDIUM'] || 99);
-        }
-        case 'created-new':
-          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-        case 'created-old':
-          return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+        case 'deadline,asc':
+          return new Date(a.deadline || 0).getTime() - new Date(b.deadline || 0).getTime();
+        case 'deadline,desc':
+          return new Date(b.deadline || 0).getTime() - new Date(a.deadline || 0).getTime();
+        case 'id,desc':
+          return b.id - a.id;
+        case 'id,asc':
+          return a.id - b.id;
+        case 'title,asc':
+          return a.title.localeCompare(b.title);
+        case 'title,desc':
+          return b.title.localeCompare(a.title);
         default:
           return 0;
       }

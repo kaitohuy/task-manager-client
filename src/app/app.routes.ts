@@ -37,6 +37,7 @@ export const routes: Routes = [
       { path: 'calendar', loadComponent: () => import('@features/dashboard/calendar/calendar-home.component').then(m => m.CalendarHomeComponent) },
       { path: 'meetings', loadComponent: () => import('@features/dashboard/meetings/meetings-home.component').then(m => m.MeetingsHomeComponent) },
       { path: 'users', loadComponent: () => import('@features/admin/users/users.component').then(m => m.UsersComponent) },
+      { path: 'logs', loadComponent: () => import('@features/dashboard/activity-logs/activity-logs.component').then(m => m.ActivityLogsComponent) },
       { path: 'profile', loadComponent: () => import('@features/dashboard/profile/profile').then(m => m.ProfileComponent) }
     ]
   },
@@ -67,6 +68,7 @@ export const routes: Routes = [
         ]
       },
       { path: 'calendar', loadComponent: () => import('@features/dashboard/calendar/calendar-home.component').then(m => m.CalendarHomeComponent) },
+      { path: 'logs', loadComponent: () => import('@features/dashboard/activity-logs/activity-logs.component').then(m => m.ActivityLogsComponent) },
       { path: 'profile', loadComponent: () => import('@features/dashboard/profile/profile').then(m => m.ProfileComponent) }
     ]
   },
@@ -96,6 +98,7 @@ export const routes: Routes = [
         ]
       },
       { path: 'calendar', loadComponent: () => import('@features/dashboard/calendar/calendar-home.component').then(m => m.CalendarHomeComponent) },
+      { path: 'logs', loadComponent: () => import('@features/dashboard/activity-logs/activity-logs.component').then(m => m.ActivityLogsComponent) },
       { path: 'profile', loadComponent: () => import('@features/dashboard/profile/profile').then(m => m.ProfileComponent) }
     ]
   }

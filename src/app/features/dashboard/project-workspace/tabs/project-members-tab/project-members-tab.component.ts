@@ -22,14 +22,25 @@ export class ProjectMembersTabComponent implements OnInit {
   searchQuery: string = '';
   availableUsers: UserDTO[] = [];
   
+  // Members Pagination & Sort
+  memberCurrentPage = 0;
+  memberPageSize = 12; // Works well with grid 1, 2, 3, 4 columns
+  memberTotalPages = 0;
+  memberSort = 'joinedAt,desc';
+
+  // Available Users Pagination & Sort
+  availableUsersPage = 0;
+  availableUsersSize = 10;
+  availableUsersTotalPages = 0;
+  availableUsersSort = 'username,asc';
+
   isLoading = true;
   isLoadingAvailable = false;
   isAdding = false;
   isAddModalOpen = false;
   error: string | null = null;
 
-  selectedUserId: number | null = null;
-  selectedRole: ProjectRole = 'MEMBER';
+  selectedUserIds: number[] = [];
 
   isAdminOrManager = false;
 
@@ -53,15 +64,27 @@ export class ProjectMembersTabComponent implements OnInit {
 
   loadMembers(): void {
     this.isLoading = true;
-    this.projectService.getProjectMembers(this.projectId)
+    this.projectService.getProjectMembers(this.projectId, this.memberCurrentPage, this.memberPageSize, this.memberSort)
       .pipe(finalize(() => this.isLoading = false))
       .subscribe({
         next: (res: any) => {
           this.members = Array.isArray(res) ? res : (res?.content || []);
+          if (res && res.totalPages !== undefined) {
+             this.memberTotalPages = res.totalPages;
+          }
           this.filterMembers();
         },
         error: () => this.error = 'Failed to load members'
       });
+  }
+  
+  goToMemberPage(page: number): void {
+    this.memberCurrentPage = page;
+    this.loadMembers();
+  }
+
+  get memberPageRange(): number[] {
+    return Array.from({length: this.memberTotalPages}, (_, i) => i);
   }
 
   filterMembers(): void {
@@ -72,7 +95,7 @@ export class ProjectMembersTabComponent implements OnInit {
     const q = this.searchQuery.toLowerCase();
     this.filteredMembers = this.members.filter(m => 
       m.user.username.toLowerCase().includes(q) || 
-      m.user.fullName?.toLowerCase().includes(q) ||
+      (m.user.fullName && m.user.fullName.toLowerCase().includes(q)) ||
       m.user.email.toLowerCase().includes(q)
     );
   }
@@ -80,8 +103,8 @@ export class ProjectMembersTabComponent implements OnInit {
   openAddModal(): void {
     if (!this.isAdminOrManager) return;
     this.isAddModalOpen = true;
-    this.selectedUserId = null;
-    this.selectedRole = 'MEMBER';
+    this.selectedUserIds = [];
+    this.availableUsersPage = 0;
     this.loadAvailableUsers();
   }
 
@@ -91,26 +114,61 @@ export class ProjectMembersTabComponent implements OnInit {
 
   loadAvailableUsers(): void {
     this.isLoadingAvailable = true;
-    this.projectService.getAvailableUsersToAdd(this.projectId)
+    this.projectService.getAvailableUsersToAdd(this.projectId, this.availableUsersPage, this.availableUsersSize, this.availableUsersSort)
       .pipe(finalize(() => this.isLoadingAvailable = false))
       .subscribe({
-        next: (users) => this.availableUsers = users,
+        next: (res: any) => {
+          this.availableUsers = Array.isArray(res) ? res : (res?.content || []);
+          if (res && res.totalPages !== undefined) {
+             this.availableUsersTotalPages = res.totalPages;
+          }
+        },
         error: () => this.error = 'Failed to load configurable users'
       });
   }
 
+  prevAvailableUsersPage(event: Event): void {
+    event.preventDefault();
+    if (this.availableUsersPage > 0) {
+      this.availableUsersPage--;
+      this.loadAvailableUsers();
+    }
+  }
+
+  nextAvailableUsersPage(event: Event): void {
+    event.preventDefault();
+    if (this.availableUsersPage < this.availableUsersTotalPages - 1) {
+      this.availableUsersPage++;
+      this.loadAvailableUsers();
+    }
+  }
+
+  toggleUserSelection(userId: number): void {
+    const index = this.selectedUserIds.indexOf(userId);
+    if (index === -1) {
+      this.selectedUserIds.push(userId);
+    } else {
+      this.selectedUserIds.splice(index, 1);
+    }
+  }
+
+  isUserSelected(userId: number): boolean {
+    return this.selectedUserIds.includes(userId);
+  }
+
   onAddMember(): void {
-    if (!this.selectedUserId) return;
+    if (this.selectedUserIds.length === 0) return;
     this.isAdding = true;
-    this.projectService.addProjectMember(this.projectId, this.selectedUserId, this.selectedRole)
+    
+    this.projectService.addProjectMembersBulk(this.projectId, this.selectedUserIds)
       .pipe(finalize(() => this.isAdding = false))
       .subscribe({
         next: () => {
           this.closeAddModal();
           this.loadMembers();
-          this.showSuccess('Member added successfully!');
+          this.showSuccess('Members added successfully!');
         },
-        error: (err) => this.showError(err?.error?.message || 'Failed to add member')
+        error: (err) => this.showError(err?.error?.message || 'Failed to add members')
       });
   }
 

@@ -208,10 +208,6 @@ export class TaskDetailPanelComponent implements OnChanges, OnDestroy {
     return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
   }
 
-  // =============================================
-  // DATA LOADING
-  // =============================================
-
   loadData(): void {
     if (!this.task) return;
     const taskId = this.task.id;
@@ -306,6 +302,7 @@ export class TaskDetailPanelComponent implements OnChanges, OnDestroy {
       deadline: this.task.deadline ? this.task.deadline.substring(0, 16) : '',
       projectId: this.task.projectId,
       assigneeId: this.task.assignee?.id,
+      version: this.task.version,
       ...changes
     };
 
@@ -329,14 +326,27 @@ export class TaskDetailPanelComponent implements OnChanges, OnDestroy {
       },
       error: (err) => {
         console.error('Update failed:', err);
-        Swal.fire({
-          toast: true,
-          position: 'top-end',
-          icon: 'error',
-          title: 'Update failed',
-          showConfirmButton: false,
-          timer: 2000
-        });
+        if (err.status === 409) {
+          Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'error',
+            title: 'Lỗi đồng bộ! Task đã bị thay đổi, vui lòng tải lại.',
+            showConfirmButton: false,
+            timer: 3000
+          });
+          this.taskService.notifyTaskRefresh();
+          this.close();
+        } else {
+          Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'error',
+            title: 'Update failed',
+            showConfirmButton: false,
+            timer: 2000
+          });
+        }
       }
     });
   }
