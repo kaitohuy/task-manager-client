@@ -28,6 +28,7 @@ export class ProjectsComponent implements OnInit, OnDestroy {
 
   searchQuery = '';
   statusFilter = 'all';
+  sortOption = 'createdAt,desc';
   
   // For UI dropdowns
   activeActionMenuId: number | null = null;
@@ -61,8 +62,8 @@ export class ProjectsComponent implements OnInit, OnDestroy {
     this.error = null;
 
     const projectsRequest$ = this.authService.hasRole('ADMIN')
-      ? this.projectService.getAllProjects(this.currentPage, this.pageSize)
-      : this.projectService.getMyProjects(this.currentPage, this.pageSize);
+      ? this.projectService.getAllProjects(this.currentPage, this.pageSize, this.sortOption)
+      : this.projectService.getMyProjects(this.currentPage, this.pageSize, this.sortOption);
 
     projectsRequest$
       .pipe(

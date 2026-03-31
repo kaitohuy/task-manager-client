@@ -1,0 +1,140 @@
+<div class="min-h-full bg-[#f4f5f7] p-8 animate-fade-in">
+  <!-- Header -->
+  <div class="max-w-[1200px] mx-auto mb-8">
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+      <div>
+        <div class="flex items-center gap-3 mb-1">
+          <div class="w-10 h-10 rounded-xl flex items-center justify-center"
+               [ngClass]="role === 'ADMIN' ? 'bg-rose-100 text-rose-600' : role === 'MANAGER' ? 'bg-violet-100 text-violet-600' : 'bg-blue-100 text-blue-600'">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+            </svg>
+          </div>
+          <h1 class="text-2xl font-black text-[#111827] tracking-tight">Activity Logs</h1>
+        </div>
+        <p class="text-xs font-bold text-[#6b778c] uppercase tracking-widest ml-[52px]">
+          <ng-container [ngSwitch]="role">
+            <span *ngSwitchCase="'ADMIN'">All system activity — Admin view</span>
+            <span *ngSwitchCase="'MANAGER'">Activity across your managed projects</span>
+            <span *ngSwitchDefault>Your personal activity history</span>
+          </ng-container>
+        </p>
+      </div>
+
+      <!-- Sort Control -->
+      <div class="flex items-center gap-3">
+        <label class="text-xs font-bold text-[#6b778c] uppercase tracking-widest whitespace-nowrap">Sort by</label>
+        <select [(ngModel)]="sort" (change)="onSortChange()"
+                class="bg-white border border-[#dfe1e6] rounded-lg px-4 h-10 text-sm font-medium text-[#111827] focus:outline-none focus:border-[#4c9aff] shadow-sm cursor-pointer appearance-none min-w-[180px]
+                bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width=%2210%22%20height=%225%22%20viewBox=%220%200%2010%205%22%20xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cpath%20d=%22M0%200l5%205%205-5z%22%20fill=%22%2394a3b8%22/%3E%3C/svg%3E')] bg-no-repeat bg-[position:right_12px_center] bg-[length:10px_5px] pr-9">
+          <option value="createdAt,desc">Newest First</option>
+          <option value="createdAt,asc">Oldest First</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="max-w-[1200px] mx-auto">
+
+    <!-- Loading Skeleton -->
+    <div *ngIf="isLoading" class="space-y-3">
+      <div *ngFor="let i of [1,2,3,4,5,6,7,8]" class="bg-white rounded-2xl border border-[#dfe1e6] p-5 flex items-start gap-4 animate-pulse">
+        <div class="w-10 h-10 rounded-xl bg-slate-100 shrink-0"></div>
+        <div class="flex-1 space-y-2">
+          <div class="h-4 bg-slate-100 rounded w-2/3"></div>
+          <div class="h-3 bg-slate-50 rounded w-1/2"></div>
+        </div>
+        <div class="h-3 bg-slate-100 rounded w-24 mt-1"></div>
+      </div>
+    </div>
+
+    <!-- Error -->
+    <div *ngIf="!isLoading && error" class="flex flex-col items-center justify-center py-24 bg-white rounded-3xl border-2 border-dashed border-rose-200">
+      <div class="w-16 h-16 bg-rose-50 rounded-full flex items-center justify-center text-rose-300 mb-4">
+        <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      </div>
+      <p class="font-bold text-rose-500">{{ error }}</p>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!isLoading && !error && logs.length === 0" class="flex flex-col items-center justify-center py-24 bg-white rounded-3xl border-2 border-dashed border-slate-200">
+      <div class="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center text-slate-300 mb-4">
+        <svg class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+        </svg>
+      </div>
+      <p class="text-slate-500 font-bold">No activity logs found.</p>
+    </div>
+
+    <!-- Log Timeline -->
+    <div *ngIf="!isLoading && !error && logs.length > 0" class="relative">
+      <!-- Vertical connective line -->
+      <div class="absolute left-[28px] top-5 bottom-5 w-px bg-slate-200 z-0"></div>
+
+      <div class="space-y-3 relative">
+        <div *ngFor="let log of logs; let last = last"
+             class="flex items-start gap-4 group animate-fade-in">
+
+          <!-- Action Icon -->
+          <div class="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 border-2 border-white shadow-md z-10 relative transition-transform group-hover:scale-105"
+               [ngClass]="getActionStyle(log.action).bg">
+            <svg class="h-6 w-6" [ngClass]="getActionStyle(log.action).color" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" [attr.d]="getActionStyle(log.action).icon" />
+            </svg>
+          </div>
+
+          <!-- Content Card -->
+          <div class="flex-1 bg-white rounded-2xl border border-[#dfe1e6] px-5 py-4 hover:border-[#4c9aff] hover:shadow-lg hover:shadow-slate-100 transition-all duration-300 cursor-default">
+            <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
+              <div class="flex-1 min-w-0">
+                <!-- Description -->
+                <p class="text-sm font-semibold text-[#111827] leading-snug">{{ log.description }}</p>
+
+                <!-- Meta row -->
+                <div class="flex flex-wrap items-center gap-2 mt-2">
+                  <!-- Actor -->
+                  <span class="text-xs font-bold text-[#0052cc] bg-blue-50 px-2 py-0.5 rounded-lg ring-1 ring-blue-200">
+                    @{{ log.username }}
+                  </span>
+
+                  <!-- Entity Type badge -->
+                  <span class="text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-lg ring-1"
+                        [ngClass]="getTypeBadgeClass(log.type)">
+                    {{ getTypeLabel(log.type) }}
+                  </span>
+
+                  <!-- Entity name -->
+                  <span *ngIf="log.entityName" class="text-xs text-[#6b778c] font-medium flex items-center gap-1">
+                    <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                    </svg>
+                    {{ log.entityName }}
+                  </span>
+                </div>
+              </div>
+
+              <!-- Timestamp -->
+              <div class="shrink-0 text-right">
+                <time class="text-[11px] text-[#6b778c] font-medium whitespace-nowrap">
+                  {{ log.createdAt | date:'dd/MM/yyyy, HH:mm' }}
+                </time>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <div *ngIf="!isLoading && totalPages > 1" class="mt-10 flex justify-center gap-2">
+      <button *ngFor="let p of pageRange"
+              (click)="goToPage(p)"
+              [class]="currentPage === p ? 'bg-[#0052cc] text-white shadow-lg shadow-blue-600/20' : 'bg-white text-[#172b4d] hover:bg-slate-50'"
+              class="w-10 h-10 rounded-xl text-sm font-black shadow-sm transition-all border border-[#dfe1e6] active:scale-95">
+        {{ p + 1 }}
+      </button>
+    </div>
+  </div>
+</div>

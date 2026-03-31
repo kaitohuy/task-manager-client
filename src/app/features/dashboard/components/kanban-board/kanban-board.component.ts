@@ -72,8 +72,9 @@ export class KanbanBoardComponent implements OnChanges {
       task.status = newStatus;
 
       // 2. Call API to persist
-      this.taskService.updateTaskStatus(task.id, newStatus).subscribe({
-        next: () => {
+      this.taskService.updateTaskStatus(task.id, newStatus, task.version).subscribe({
+        next: (updatedTask) => {
+          task.version = updatedTask.version;
           this.onTaskStatusChange.emit();
           // We can notify refresh so parent re-syncs
           this.taskService.notifyTaskRefresh();
@@ -86,7 +87,7 @@ export class KanbanBoardComponent implements OnChanges {
             timer: 2000
           });
         },
-        error: () => {
+        error: (err) => {
           // 3. Revert if API fails
           transferArrayItem(
             event.container.data,
@@ -95,14 +96,27 @@ export class KanbanBoardComponent implements OnChanges {
             event.previousIndex
           );
           task.status = oldStatus;
-          Swal.fire({
-            toast: true,
-            position: 'top-end',
-            icon: 'error',
-            title: 'Lỗi cập nhật trạng thái! Đã hoàn tác.',
-            showConfirmButton: false,
-            timer: 3000
-          });
+          
+          if (err.status === 409) {
+            Swal.fire({
+              toast: true,
+              position: 'top-end',
+              icon: 'error',
+              title: 'Lỗi đồng bộ! Task đã bị thay đổi, vui lòng tải lại.',
+              showConfirmButton: false,
+              timer: 3000
+            });
+            this.taskService.notifyTaskRefresh();
+          } else {
+            Swal.fire({
+              toast: true,
+              position: 'top-end',
+              icon: 'error',
+              title: 'Lỗi cập nhật trạng thái! Đã hoàn tác.',
+              showConfirmButton: false,
+              timer: 3000
+            });
+          }
         }
       });
     }
