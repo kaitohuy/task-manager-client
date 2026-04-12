@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '@core/services/auth.service';
 import { CreateUserDTO, Gender } from '@models/index';
@@ -9,7 +9,7 @@ import { finalize } from 'rxjs';
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss'
 })
@@ -21,6 +21,8 @@ export class LoginComponent implements OnInit {
   fieldErrors: any = {};
   showPassword = false;
   showRegisterPassword = false;
+  showResendVerification = false;
+  resendEmail: string = '';
 
   // Login Model
   loginData = {
@@ -40,7 +42,11 @@ export class LoginComponent implements OnInit {
     roles: []
   };
 
-  constructor(private authService: AuthService, private router: Router) {}
+  constructor(
+    private authService: AuthService, 
+    private router: Router,
+    private route: ActivatedRoute
+  ) {}
   
   getErrorKeys() {
     return Object.keys(this.fieldErrors || {});
@@ -52,6 +58,14 @@ export class LoginComponent implements OnInit {
         username: '', password: '', email: '', fullName: '',
         phone: '', address: '', gender: 'MALE' as Gender, roles: []
     };
+
+    // Check for error messages in URL (e.g. from OAuth2 redirect)
+    this.route.queryParams.subscribe(params => {
+      if (params['error']) {
+        this.error = params['error'];
+      }
+    });
+
     if (this.authService.isAuthenticated()) {
       this.router.navigate([this.authService.getUserDashboardPath()]);
     }
@@ -82,6 +96,29 @@ export class LoginComponent implements OnInit {
       error: (err) => {
         this.isLoading = false;
         this.error = err.error?.message || 'Login failed. Please check your credentials.';
+        if (this.error && this.error.includes('chưa được kích hoạt')) {
+          this.showResendVerification = true;
+          this.resendEmail = this.loginData.identifier; // Assuming identifier is email or username
+        }
+      }
+    });
+  }
+
+  handleResendVerification() {
+    if (!this.resendEmail) {
+      this.error = 'Vui lòng nhập email để gửi lại mã xác thực.';
+      return;
+    }
+    this.isLoading = true;
+    this.authService.resendVerification(this.resendEmail).subscribe({
+      next: () => {
+        this.isLoading = false;
+        this.successMessage = 'Email xác thực đã được gửi lại. Vui lòng kiểm tra hộp thư.';
+        this.showResendVerification = false;
+      },
+      error: (err) => {
+        this.isLoading = false;
+        this.error = err.error?.message || 'Không thể gửi lại email xác thực.';
       }
     });
   }
@@ -116,9 +153,9 @@ export class LoginComponent implements OnInit {
       });
   }
 
-  onForgotPassword(event: Event) {
-    event.preventDefault();
-    alert('Forgot Password feature is under development. Please contact the Admin.');
+
+  onGoogleLogin() {
+    this.authService.loginWithGoogle();
   }
 
   formatDate(event: any) {

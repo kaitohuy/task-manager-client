@@ -25,6 +25,10 @@ export class AuthService {
     });
   }
 
+  loginWithGoogle(): void {
+    window.location.href = 'http://localhost:8080/oauth2/authorization/google';
+  }
+
   getToken(): string | null {
     return this.tokenService.getToken();
   }
@@ -52,6 +56,22 @@ export class AuthService {
     }
     this.currentUser.set(null);
     this.router.navigate(['/login']);
+  }
+
+  verifyEmail(token: string): Observable<string> {
+    return this.apiService.get<string>(`/auth/verify-email?token=${token}`, {}, { responseType: 'text' as 'json' });
+  }
+
+  forgotPassword(email: string): Observable<string> {
+    return this.apiService.post<string>(`/auth/forgot-password?email=${email}`, {}, { responseType: 'text' as 'json' });
+  }
+
+  resetPassword(token: string, newPassword: string): Observable<string> {
+    return this.apiService.post<string>(`/auth/reset-password?token=${token}&newPassword=${newPassword}`, {}, { responseType: 'text' as 'json' });
+  }
+
+  resendVerification(email: string): Observable<string> {
+    return this.apiService.post<string>(`/auth/resend-verification?email=${email}`, {}, { responseType: 'text' as 'json' });
   }
 
   hasRole(role: UserRole): boolean {
@@ -84,6 +104,10 @@ export class AuthService {
     } else {
       this.isLoading.set(false);
     }
+  }
+
+  refreshSession(): Observable<UserDTO | null> {
+    return this.fetchCurrentUser();
   }
 
   private fetchCurrentUser(): Observable<UserDTO | null> {
