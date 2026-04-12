@@ -8,6 +8,10 @@ import { roleGuard } from '@core/guards/role.guard';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
+  { path: 'auth/forgot-password', loadComponent: () => import('@features/auth/forgot-password/forgot-password.component').then(m => m.ForgotPasswordComponent) },
+  { path: 'auth/reset-password', loadComponent: () => import('@features/auth/reset-password/reset-password.component').then(m => m.ResetPasswordComponent) },
+  { path: 'auth/verify-email', loadComponent: () => import('@features/auth/verify-email/verify-email.component').then(m => m.VerifyEmailComponent) },
+  { path: 'oauth2/redirect', loadComponent: () => import('@features/auth/oauth2-redirect/oauth2-redirect.component').then(m => m.OAuth2RedirectComponent) },
   { path: '', redirectTo: '/dashboard', pathMatch: 'full' },
   
   // ADMIN Routes
