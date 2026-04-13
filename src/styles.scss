@@ -10,20 +10,68 @@ html, body {
   background-color: #f8fafc; /* slate-50 */
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-8px); }
-  to { opacity: 1; transform: translateY(0); }
+/* Common Auth Styles */
+.auth-input {
+  @apply w-full bg-[#f0f0f0] border-2 border-transparent rounded-[12px] px-6 py-4 text-sm font-bold text-slate-800 outline-none transition-all placeholder:text-slate-400;
+  
+  &:hover {
+    @apply border-[#a491f2]/50 bg-[#f5f5f5];
+  }
+  
+  &:focus {
+    @apply border-[#a491f2] bg-white shadow-[0_0_0_4px_rgba(164,145,242,0.15)];
+  }
+  
+  &[type="date"] {
+    &::-webkit-calendar-picker-indicator {
+      @apply cursor-pointer opacity-60 hover:opacity-100 transition-opacity;
+      filter: grayscale(1) brightness(0.5);
+    }
+  }
 }
 
-.animate-fade-in {
-  animation: fadeIn 0.2s ease-out forwards;
+.auth-label {
+  @apply text-[10px] font-black text-slate-500 uppercase tracking-[0.15em] ml-1 mb-1.5 block text-left;
 }
 
-@keyframes pulseFast {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.7; transform: scale(1.1); }
+.auth-btn-primary {
+  @apply w-full py-4 bg-[#5e42d6] text-[#fcfcfc] font-black rounded-[12px] shadow-[0_6px_16px_rgba(94,66,214,0.3)] hover:bg-[#4d36b1] transition-all active:scale-95 flex items-center justify-center gap-3 uppercase text-[11px] tracking-[0.2em] disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100;
 }
 
-.animate-pulse-fast {
-  animation: pulseFast 0.6s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+.glass-card {
+  position: relative;
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    border-radius: inherit;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.4);
+  }
+}
+
+.custom-scrollbar {
+  &::-webkit-scrollbar { width: 6px; }
+  &::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.05); border-radius: 10px; }
+  &::-webkit-scrollbar-thumb { background: rgba(0, 0, 0, 0.1); border-radius: 10px; }
+}
+
+@keyframes fadeInAuth {
+  from { opacity: 0; transform: scale(0.98) translateX(-10px); }
+  to { opacity: 1; transform: scale(1) translateX(0); }
+}
+
+@keyframes shake {
+  10%, 90% { transform: translate3d(-1px, 0, 0); }
+  20%, 80% { transform: translate3d(2px, 0, 0); }
+  30%, 50%, 70% { transform: translate3d(-3px, 0, 0); }
+  40%, 60% { transform: translate3d(3px, 0, 0); }
+}
+
+.animate-auth-fade-in {
+  animation: fadeInAuth 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-shake {
+  animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
 }

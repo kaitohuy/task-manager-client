@@ -37,17 +37,24 @@ export class AuthService {
     return !!this.getToken() && !!this.currentUser();
   }
 
-  login(credentials: LoginRequest): Observable<UserDTO | null> {
+  login(credentials: LoginRequest): Observable<AuthResponse> {
     return this.apiService.post<AuthResponse>('/auth/login', credentials).pipe(
       tap(response => {
-        this.tokenService.setToken(response.token);
+        if (response.token) {
+          this.tokenService.setToken(response.token);
+        }
       }),
-      switchMap(() => this.fetchCurrentUser())
+      switchMap(response => {
+        if (response.mfaRequired) {
+          return of(response);
+        }
+        return this.fetchCurrentUser().pipe(switchMap(() => of(response)));
+      })
     );
   }
 
-  register(userData: CreateUserDTO): Observable<string> {
-    return this.apiService.post<string>('/auth/register', userData, { responseType: 'text' as 'json' });
+  register(userData: CreateUserDTO): Observable<{message: string}> {
+    return this.apiService.post<{message: string}>('/auth/register', userData);
   }
 
   logout(notifyTokenService: boolean = true): void {
@@ -58,20 +65,43 @@ export class AuthService {
     this.router.navigate(['/login']);
   }
 
-  verifyEmail(token: string): Observable<string> {
-    return this.apiService.get<string>(`/auth/verify-email?token=${token}`, {}, { responseType: 'text' as 'json' });
+  verifyEmail(token: string): Observable<{message: string}> {
+    return this.apiService.get<{message: string}>(`/auth/verify-email?token=${token}`);
   }
 
-  forgotPassword(email: string): Observable<string> {
-    return this.apiService.post<string>(`/auth/forgot-password?email=${email}`, {}, { responseType: 'text' as 'json' });
+  forgotPassword(email: string): Observable<{message: string}> {
+    return this.apiService.post<{message: string}>(`/auth/forgot-password?email=${email}`, {});
   }
 
-  resetPassword(token: string, newPassword: string): Observable<string> {
-    return this.apiService.post<string>(`/auth/reset-password?token=${token}&newPassword=${newPassword}`, {}, { responseType: 'text' as 'json' });
+  resetPassword(token: string, newPassword: string): Observable<{message: string}> {
+    return this.apiService.post<{message: string}>(`/auth/reset-password?token=${token}&newPassword=${newPassword}`, {});
   }
 
-  resendVerification(email: string): Observable<string> {
-    return this.apiService.post<string>(`/auth/resend-verification?email=${email}`, {}, { responseType: 'text' as 'json' });
+  resendVerification(email: string): Observable<{message: string}> {
+    return this.apiService.post<{message: string}>(`/auth/resend-verification?email=${email}`, {});
+  }
+
+  verifyOtp(mfaToken: string, code: string): Observable<AuthResponse> {
+    return this.apiService.post<AuthResponse>(`/auth/verify-otp?mfaToken=${mfaToken}&code=${code}`, {}).pipe(
+      tap(response => {
+        if (response.token) {
+          this.tokenService.setToken(response.token);
+        }
+      }),
+      switchMap(response => this.fetchCurrentUser().pipe(switchMap(() => of(response))))
+    );
+  }
+
+  setupMfa(username: string): Observable<{message: string}> {
+    return this.apiService.get<{message: string}>(`/auth/mfa/setup?username=${username}`);
+  }
+
+  enableMfa(username: string, code: string): Observable<{message: string}> {
+    return this.apiService.post<{message: string}>(`/auth/mfa/enable?username=${username}&code=${code}`, {});
+  }
+
+  disableMfa(username: string): Observable<{message: string}> {
+    return this.apiService.post<{message: string}>(`/auth/mfa/disable?username=${username}`, {});
   }
 
   hasRole(role: UserRole): boolean {
