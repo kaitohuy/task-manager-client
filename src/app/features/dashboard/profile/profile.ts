@@ -33,6 +33,12 @@ export class ProfileComponent implements OnInit {
   showCurrentPw = false;
   showNewPw = false;
   showConfirmPw = false;
+  
+  // MFA
+  qrCodeUri: string | null = null;
+  mfaCodeInput = '';
+  isMfaSetupMode = false;
+  isProcessingMfa = false;
 
   constructor(private authService: AuthService) {}
 
@@ -102,5 +108,66 @@ export class ProfileComponent implements OnInit {
       this.confirmPassword = '';
       Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Password changed successfully!', showConfirmButton: false, timer: 2500 });
     }, 800);
+  }
+
+  // MFA Methods
+  initMfaSetup() {
+    if (!this.currentUser) return;
+    this.isProcessingMfa = true;
+    this.authService.setupMfa(this.currentUser.username).subscribe({
+      next: (res) => {
+        this.qrCodeUri = res.message;
+        this.isMfaSetupMode = true;
+        this.isProcessingMfa = false;
+      },
+      error: (err) => {
+        this.isProcessingMfa = false;
+        Swal.fire('Lỗi', err.error?.message || 'Không thể thiết lập 2FA', 'error');
+      }
+    });
+  }
+
+  confirmEnableMfa() {
+    if (!this.currentUser || !this.mfaCodeInput) return;
+    this.isProcessingMfa = true;
+    this.authService.enableMfa(this.currentUser.username, this.mfaCodeInput).subscribe({
+      next: () => {
+        this.isMfaSetupMode = false;
+        this.isProcessingMfa = false;
+        if (this.currentUser) this.currentUser.mfaEnabled = true;
+        Swal.fire('Thành công', 'Đã bật bảo mật 2 lớp!', 'success');
+      },
+      error: (err) => {
+        this.isProcessingMfa = false;
+        Swal.fire('Lỗi', err.error?.message || 'Mã xác thực không đúng', 'error');
+      }
+    });
+  }
+
+  disableMfa() {
+    if (!this.currentUser) return;
+    Swal.fire({
+      title: 'Tắt bảo mật 2 lớp?',
+      text: 'Tài khoản của bạn sẽ kém an toàn hơn.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Đồng ý tắt',
+      cancelButtonText: 'Hủy'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.isProcessingMfa = true;
+        this.authService.disableMfa(this.currentUser!.username).subscribe({
+          next: () => {
+            this.isProcessingMfa = false;
+            if (this.currentUser) this.currentUser.mfaEnabled = false;
+            Swal.fire('Đã tắt', 'Bảo mật 2 lớp đã được gỡ bỏ.', 'success');
+          },
+          error: (err) => {
+            this.isProcessingMfa = false;
+            Swal.fire('Lỗi', err.error?.message || 'Không thể tắt 2FA', 'error');
+          }
+        });
+      }
+    });
   }
 }

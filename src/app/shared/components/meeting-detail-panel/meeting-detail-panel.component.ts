@@ -109,8 +109,9 @@ export class MeetingDetailPanelComponent implements OnInit, OnDestroy {
 
   loadAvailableUsers(): void {
     this.isLoadingUsers = true;
-    this.projectService.getAvailableUsersToAdd(this.meeting.projectId).subscribe({
-      next: (users) => {
+    this.projectService.getAvailableUsersToAdd(this.meeting.projectId, 0, 100).subscribe({
+      next: (res: any) => {
+        const users: UserDTO[] = Array.isArray(res) ? res : (res?.content || []);
         // Filter out users already in meeting
         const participantIds = this.meeting.participants.map(p => p.id);
         participantIds.push(this.meeting.organizer.id);

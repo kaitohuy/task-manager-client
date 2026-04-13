@@ -29,10 +29,11 @@ export class TaskService {
     this.taskEditRequestSource.next(task);
   }
 
-  getTasksByProject(projectId: number, page: number = 0, size: number = 10): Observable<Page<TaskDTO>> {
+  getTasksByProject(projectId: number, page: number = 0, size: number = 100, sort: string = 'id,desc'): Observable<Page<TaskDTO>> {
     return this.apiService.get<Page<TaskDTO>>(`/api/tasks/project/${projectId}`, {
       page,
-      size
+      size,
+      sort
     });
   }
 
@@ -52,27 +53,27 @@ export class TaskService {
     return this.apiService.delete<void>(`/api/tasks/${id}`);
   }
 
-  updateTaskStatus(id: number, status: TaskStatus): Observable<TaskDTO> {
-    return this.apiService.patch<TaskDTO>(`/api/tasks/${id}/status`, null, { status });
+  updateTaskStatus(id: number, status: TaskStatus, version?: number): Observable<TaskDTO> {
+    return this.apiService.patch<TaskDTO>(`/api/tasks/${id}/status`, null, { status, version });
   }
 
-  searchTasks(projectId: number, keyword: string, page: number = 0, size: number = 10): Observable<Page<TaskDTO>> {
+  searchTasks(projectId: number, keyword: string, page: number = 0, size: number = 10, sort?: string): Observable<Page<TaskDTO>> {
     return this.apiService.get<Page<TaskDTO>>('/api/tasks/search', {
       projectId,
       keyword,
-      pageable: { page, size }
+      page, size, sort
     });
   }
 
-  filterTasksByStatus(projectId: number, status: TaskStatus, page: number = 0, size: number = 10): Observable<Page<TaskDTO>> {
+  filterTasksByStatus(projectId: number, status: TaskStatus, page: number = 0, size: number = 10, sort?: string): Observable<Page<TaskDTO>> {
     return this.apiService.get<Page<TaskDTO>>('/api/tasks/filter', {
       projectId,
       status,
-      pageable: { page, size }
+      page, size, sort
     });
   }
 
-  getAllTasks(page: number = 0, size: number = 20): Observable<Page<TaskDTO>> {
-    return this.apiService.get<Page<TaskDTO>>('/api/tasks', { page, size });
+  getAllTasks(page: number = 0, size: number = 20, sort?: string): Observable<Page<TaskDTO>> {
+    return this.apiService.get<Page<TaskDTO>>('/api/tasks', { page, size, sort });
   }
 }

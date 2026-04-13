@@ -15,11 +15,14 @@ export interface UserDTO {
   gender: Gender;
   dob: string;
   imageUrl?: string;
+  mfaEnabled: boolean;
 }
 
 export interface AuthResponse {
   username: string;
-  token: string;
+  token?: string;
+  mfaRequired?: boolean;
+  mfaToken?: string;
 }
 
 export interface LoginRequest {
@@ -60,7 +63,7 @@ export interface ProjectDTO {
   name: string;
   description: string;
   createdAt: string;
-  createdBy: UserDTO;
+  createdBy?: UserDTO | null;
   memberCount: number;
   memberAvatars?: MemberAvatarDTO[];
 }
@@ -76,6 +79,7 @@ export interface TaskDTO {
   projectName: string;
   assignee?: UserDTO;
   priority?: string;
+  version?: number;
 }
 
 export interface CreateTaskDTO {
@@ -85,6 +89,7 @@ export interface CreateTaskDTO {
   deadline: string;
   projectId: number;
   assigneeId?: number;
+  version?: number;
 }
 
 export interface CreateProjectDTO {
@@ -214,4 +219,31 @@ export interface MeetingResponseDTO {
   projectId: number;
   organizer: UserDTO;
   participants: UserDTO[];
+}
+
+export type ActivityAction = 'CREATE' | 'UPDATE' | 'DELETE' | 'ASSIGN' | 'UNASSIGN' | 'STATUS_CHANGE' | 'ROLE_CHANGE' | 'LOGIN' | 'LOGOUT' | 'COMMENT' | 'ATTACH';
+export type ActivityType = 'TASK' | 'PROJECT' | 'USER' | 'MEMBER' | 'MEETING' | 'COMMENT' | 'ATTACHMENT' | 'AUTH';
+
+export interface ActivityLogDTO {
+  id: number;
+  userId: number;
+  username: string;
+  action: ActivityAction;
+  type: ActivityType;
+  entityId: number;
+  entityName: string;
+  description: string;
+  createdAt: string;
+  metadata?: Record<string, unknown>;
+}
+
+export interface Permission {
+  id: number;
+  name: string;
+  description: string;
+}
+
+export interface UserPermissionOverride {
+  permissionId: number;
+  isDenied: boolean;
 }

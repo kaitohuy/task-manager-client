@@ -23,6 +23,16 @@
         <option value="archived">Archived</option>
       </select>
 
+      <!-- Sort Filter -->
+      <select [(ngModel)]="sortOption" (change)="loadProjects()"
+              class="bg-white border border-[#dfe1e6] rounded-lg px-4 h-11 text-sm font-medium text-[#111827] focus:outline-none focus:border-[#4c9aff] shadow-sm cursor-pointer hover:bg-slate-50 appearance-none min-w-[160px]
+              bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width=%2210%22%20height=%225%22%20viewBox=%220%200%2010%205%22%20xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cpath%20d=%22M0%200l5%205%205-5z%22%20fill=%22%2394a3b8%22/%3E%3C/svg%3E')] bg-no-repeat bg-[100%_center] bg-[length:10px_5px] bg-[position:right_10px_center]">
+        <option value="createdAt,desc">Newest First</option>
+        <option value="createdAt,asc">Oldest First</option>
+        <option value="name,asc">Name (A-Z)</option>
+        <option value="name,desc">Name (Z-A)</option>
+      </select>
+
       <!-- Create Button -->
       <button *ngIf="!isMember()" (click)="toggleForm()" 
               class="flex items-center gap-2 bg-[#0052cc] hover:bg-[#0747a6] text-white px-6 h-11 rounded-lg text-sm font-bold transition-all shadow-lg shadow-blue-600/20 active:scale-95 whitespace-nowrap">
@@ -139,7 +149,7 @@
           </div>
 
           <div class="flex flex-col items-end">
-            <span class="text-[12px] font-medium text-[#111827] uppercase tracking-tight">{{ p.createdBy.fullName }}</span>
+            <span class="text-[12px] font-medium text-[#111827] uppercase tracking-tight">{{ p.createdBy?.fullName || p.createdBy?.username || 'System' }}</span>
             <span class="text-[11px] font-medium text-[#111827] mt-0.5">{{ p.createdAt | date:'dd/MM/yyyy' }}</span>
           </div>
         </div>
