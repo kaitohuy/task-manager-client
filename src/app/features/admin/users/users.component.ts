@@ -1,10 +1,10 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { UserDTO, UserRole, CreateUserDTO, UpdateUserDTO, Gender } from '@models/index';
+import { UserDTO, UserRole, CreateUserDTO, UpdateUserDTO, Gender, Permission, UserPermissionOverride } from '@models/index';
 import { UserService } from '@core/services/user.service';
 import { DashboardService } from '@core/services/dashboard.service';
-import { finalize, Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
+import { finalize, Subject, debounceTime, distinctUntilChanged, takeUntil, forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-users',
@@ -20,6 +20,15 @@ export class UsersComponent implements OnInit, OnDestroy {
   showForm = false;
   showPassword = false;
   
+  // Permission Management
+  showPermissionModal = false;
+  allPermissions: Permission[] = [];
+  effectivePermissionNames: string[] = []; // Current effective permissions (Role + Overrides)
+  permissionOverrides: UserPermissionOverride[] = []; // Explicit settings
+  selectedUserForPermission: UserDTO | null = null;
+  permissionLoading = false;
+  savePermissionLoading = false;
+
   error: string | null = null;
   success: string | null = null;
   fieldErrors: any = {};
@@ -61,6 +70,72 @@ export class UsersComponent implements OnInit, OnDestroy {
     this.setupSearch();
     this.loadUsers();
     this.loadStats();
+    this.loadAllPermissions();
+  }
+
+  loadAllPermissions(): void {
+    this.userService.getPermissions().subscribe({
+      next: (perms) => this.allPermissions = perms
+    });
+  }
+
+  openPermissionModal(user: UserDTO): void {
+    this.selectedUserForPermission = user;
+    this.showPermissionModal = true;
+    this.permissionLoading = true;
+    this.permissionOverrides = [];
+    this.effectivePermissionNames = [];
+    
+    forkJoin({
+      effective: this.userService.getEffectivePermissions(user.id),
+      overrides: this.userService.getIndividualPermissionOverrides(user.id)
+    }).subscribe({
+      next: (res) => {
+        this.effectivePermissionNames = res.effective;
+        this.permissionOverrides = res.overrides;
+        this.permissionLoading = false;
+      },
+      error: () => {
+        this.error = 'Failed to load permissions';
+        this.permissionLoading = false;
+      }
+    });
+  }
+
+  getOverride(permissionId: number): UserPermissionOverride | undefined {
+    return this.permissionOverrides.find(o => o.permissionId === permissionId);
+  }
+
+  setOverride(permissionId: number, state: 'ALLOW' | 'DENY' | 'NONE'): void {
+    const index = this.permissionOverrides.findIndex(o => o.permissionId === permissionId);
+    
+    if (state === 'NONE') {
+      if (index > -1) this.permissionOverrides.splice(index, 1);
+    } else {
+      const isDenied = state === 'DENY';
+      if (index > -1) {
+        this.permissionOverrides[index].isDenied = isDenied;
+      } else {
+        this.permissionOverrides.push({ permissionId, isDenied });
+      }
+    }
+  }
+
+  savePermissions(): void {
+    if (!this.selectedUserForPermission) return;
+    this.savePermissionLoading = true;
+    this.userService.updateUserPermissions(this.selectedUserForPermission.id, this.permissionOverrides).subscribe({
+      next: () => {
+        this.success = 'Permissions updated successfully!';
+        this.showPermissionModal = false;
+        this.savePermissionLoading = false;
+        setTimeout(() => this.success = null, 3000);
+      },
+      error: () => {
+        this.error = 'Failed to save permissions';
+        this.savePermissionLoading = false;
+      }
+    });
   }
 
   ngOnDestroy(): void {

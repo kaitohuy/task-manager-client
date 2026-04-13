@@ -23,6 +23,9 @@ export class LoginComponent implements OnInit {
   showRegisterPassword = false;
   showResendVerification = false;
   resendEmail: string = '';
+  isMfaStep = false;
+  mfaCode = '';
+  mfaToken = '';
 
   // Login Model
   loginData = {
@@ -89,9 +92,15 @@ export class LoginComponent implements OnInit {
 
     this.isLoading = true;
     this.authService.login(this.loginData).subscribe({
-      next: () => {
+      next: (res) => {
         this.isLoading = false;
-        this.router.navigate([this.authService.getUserDashboardPath()]);
+        if (res.mfaRequired) {
+          this.isMfaStep = true;
+          this.mfaToken = res.mfaToken!;
+          this.error = null;
+        } else {
+          this.router.navigate([this.authService.getUserDashboardPath()]);
+        }
       },
       error: (err) => {
         this.isLoading = false;
@@ -100,6 +109,25 @@ export class LoginComponent implements OnInit {
           this.showResendVerification = true;
           this.resendEmail = this.loginData.identifier; // Assuming identifier is email or username
         }
+      }
+    });
+  }
+
+  handleMfaVerify() {
+    if (!this.mfaCode || this.mfaCode.length !== 6) {
+      this.error = 'Vui lòng nhập mã OTP 6 chữ số';
+      return;
+    }
+
+    this.isLoading = true;
+    this.authService.verifyOtp(this.mfaToken, this.mfaCode).subscribe({
+      next: () => {
+        this.isLoading = false;
+        this.router.navigate([this.authService.getUserDashboardPath()]);
+      },
+      error: (err) => {
+        this.isLoading = false;
+        this.error = err.error?.message || 'Mã OTP không chính xác';
       }
     });
   }
@@ -113,7 +141,9 @@ export class LoginComponent implements OnInit {
     this.authService.resendVerification(this.resendEmail).subscribe({
       next: () => {
         this.isLoading = false;
-        this.successMessage = 'Email xác thực đã được gửi lại. Vui lòng kiểm tra hộp thư.';
+        this.successMessage = 'Mã xác thực mới đã được gửi vào email của bạn. Vui lòng kiểm tra hộp thư.';
+        this.error = null;
+        this.fieldErrors = {};
         this.showResendVerification = false;
       },
       error: (err) => {
@@ -128,17 +158,14 @@ export class LoginComponent implements OnInit {
     this.fieldErrors = {};
     this.isLoading = true;
 
-    // Format DOB if present (yyyy-mm-dd -> yyyy/mm/dd)
+    // Format DOB if present (No replacement needed, Jackson expects yyyy-MM-dd)
     const payload = { ...this.registerData };
-    if (payload.dob) {
-        payload.dob = (payload.dob as string).replace(/-/g, '/') as any;
-    }
 
     this.authService.register(payload)
       .pipe(finalize(() => this.isLoading = false))
       .subscribe({
-        next: () => {
-          this.successMessage = 'Registration successful! You can now log in.';
+        next: (res) => {
+          this.successMessage = 'Đăng ký thành công! Một email xác thực đã được gửi đến địa chỉ ' + payload.email + '. Vui lòng kiểm tra và nhấp vào link để kích hoạt tài khoản.';
           this.isLoginMode = true;
           this.loginData.identifier = this.registerData.username;
         },

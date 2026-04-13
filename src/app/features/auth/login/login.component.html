@@ -51,8 +51,40 @@
         </div>
       </div>
 
+      <!-- MFA OTP Form -->
+      <div *ngIf="isMfaStep" class="p-8 space-y-8 animate-fade-in">
+        <div class="text-center space-y-2">
+          <div class="w-16 h-16 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600 mx-auto mb-4 shadow-sm">
+            <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+          </div>
+          <h3 class="text-2xl font-black text-slate-800 tracking-tight">Xác thực 2 lớp</h3>
+          <p class="text-slate-500 text-[10px] font-black uppercase tracking-widest">Vui lòng nhập mã từ App Authenticator của bạn</p>
+        </div>
+
+        <form (ngSubmit)="handleMfaVerify()" class="space-y-6">
+          <div class="relative group">
+            <label class="auth-label">Mã OTP 6 chữ số</label>
+            <input name="mfaCode" [(ngModel)]="mfaCode" maxlength="6"
+                   class="auth-input text-center text-2xl tracking-[0.5em] font-black" 
+                   placeholder="000000" autofocus />
+          </div>
+
+          <button type="submit" [disabled]="isLoading" class="auth-btn-primary">
+            <div *ngIf="isLoading" class="w-5 h-5 border-2 border-slate-900/30 border-t-slate-900 rounded-full animate-spin"></div>
+            {{ isLoading ? 'Xác thực...' : 'Xác nhận' }}
+          </button>
+
+          <button type="button" (click)="isMfaStep = false; mfaCode = ''; error = null" 
+                  class="w-full text-center text-[10px] font-bold text-slate-400 hover:text-slate-600 uppercase tracking-widest transition-colors">
+            Quay lại Đăng nhập
+          </button>
+        </form>
+      </div>
+
       <!-- Login Form -->
-      <form *ngIf="isLoginMode" (ngSubmit)="handleLogin()" class="p-8 space-y-6" autocomplete="off">
+      <form *ngIf="isLoginMode && !isMfaStep" (ngSubmit)="handleLogin()" class="p-8 space-y-6" autocomplete="off">
         <div class="space-y-4">
           <div class="relative group">
             <label class="auth-label">Username</label>
@@ -105,7 +137,7 @@
       </form>
 
       <!-- Register Form (Expanded for all CreateUserDTO fields) -->
-      <form *ngIf="!isLoginMode" (ngSubmit)="handleRegister()" class="p-8 pt-4 space-y-6 max-h-[60vh] overflow-y-auto custom-scrollbar" autocomplete="off">
+      <form *ngIf="!isLoginMode && !isMfaStep" (ngSubmit)="handleRegister()" class="p-8 pt-4 space-y-6 max-h-[60vh] overflow-y-auto custom-scrollbar" autocomplete="off">
         <div class="grid md:grid-cols-2 gap-4">
           <div class="space-y-1.5">
             <label class="auth-label">Username *</label>

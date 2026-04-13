@@ -15,11 +15,14 @@ export interface UserDTO {
   gender: Gender;
   dob: string;
   imageUrl?: string;
+  mfaEnabled: boolean;
 }
 
 export interface AuthResponse {
   username: string;
-  token: string;
+  token?: string;
+  mfaRequired?: boolean;
+  mfaToken?: string;
 }
 
 export interface LoginRequest {
@@ -232,4 +235,15 @@ export interface ActivityLogDTO {
   description: string;
   createdAt: string;
   metadata?: Record<string, unknown>;
+}
+
+export interface Permission {
+  id: number;
+  name: string;
+  description: string;
+}
+
+export interface UserPermissionOverride {
+  permissionId: number;
+  isDenied: boolean;
 }
