@@ -4,6 +4,7 @@ import { Observable, catchError, of, switchMap, tap } from 'rxjs';
 import { ApiService } from './api.service';
 import { TokenService } from './token.service';
 import { AuthResponse, LoginRequest, UserDTO, UserRole, CreateUserDTO } from '@models/index';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
@@ -26,7 +27,7 @@ export class AuthService {
   }
 
   loginWithGoogle(): void {
-    window.location.href = 'http://localhost:8080/oauth2/authorization/google';
+    window.location.href = `${environment.apiUrl}/oauth2/authorization/google`;
   }
 
   getToken(): string | null {
