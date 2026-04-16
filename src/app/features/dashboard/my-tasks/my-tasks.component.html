@@ -32,10 +32,14 @@
 
           <select [ngModel]="sortBy" 
                   (ngModelChange)="setSortBy($event)"
-                  class="bg-white border border-slate-200 text-slate-600 text-xs font-bold rounded-md px-3 py-1.5 focus:outline-none focus:border-blue-600 transition-colors uppercase tracking-tight">
-            <option value="deadline-asc">Deadline: Soon</option>
-            <option value="deadline-desc">Deadline: Later</option>
-            <option value="priority-high">Priority: High</option>
+                  class="bg-white border border-slate-200 text-slate-600 text-xs font-bold rounded-md px-3 py-1.5 focus:outline-none focus:border-blue-600 transition-colors uppercase tracking-tight appearance-none pr-8 relative cursor-pointer
+                  bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width=%2210%22%20height=%225%22%20viewBox=%220%200%2010%205%22%20xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cpath%20d=%22M0%200l5%205%205-5z%22%20fill=%22%2394a3b8%22/%3E%3C/svg%3E')] bg-no-repeat bg-[100%_center] bg-[length:10px_5px] bg-[position:right_10px_center]">
+            <option value="id,desc">Mới tạo nhất</option>
+            <option value="id,asc">Cũ nhất</option>
+            <option value="deadline,asc">Deadline: Gần nhất</option>
+            <option value="deadline,desc">Deadline: Xa nhất</option>
+            <option value="title,asc">Tên (A-Z)</option>
+            <option value="title,desc">Tên (Z-A)</option>
           </select>
         </div>
       </div>

@@ -27,7 +27,7 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
   // Filter states
   searchQuery = '';
   statusFilter = 'all';
-  sortBy = 'deadline-asc';
+  sortBy = 'deadline,asc';
 
   private projectSubscriptions: StompSubscription[] = [];
   private taskStreamSubscription: RxSubscription | null = null;
@@ -129,7 +129,7 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
       this.isLoading = true;
     }
     this.error = null;
-    this.taskService.getTasksByProject(this.projectId, 0, 100)
+    this.taskService.getTasksByProject(this.projectId, 0, 100, this.sortBy)
       .pipe(finalize(() => {
         if (!silent) {
           this.isLoading = false;
@@ -168,23 +168,15 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
       );
     }
 
-    // Sorting
-    result.sort((a, b) => {
-      if (this.sortBy === 'deadline-asc') {
-        return new Date(a.deadline || 0).getTime() - new Date(b.deadline || 0).getTime();
-      }
-      if (this.sortBy === 'deadline-desc') {
-        return new Date(b.deadline || 0).getTime() - new Date(a.deadline || 0).getTime();
-      }
-      return 0;
-    });
-
     return result;
   }
 
   setSearchQuery(q: string) { this.searchQuery = q; }
   setStatusFilter(s: string) { this.statusFilter = s; }
-  setSortBy(s: string) { this.sortBy = s; }
+  setSortBy(s: string) { 
+    this.sortBy = s;
+    this.loadTasks(); 
+  }
 
   onTaskClick(task: TaskDTO): void {
     this.selectedTask = task;
